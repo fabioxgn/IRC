@@ -1,0 +1,90 @@
+object MainForm: TMainForm
+  Left = 628
+  Height = 398
+  Top = 318
+  Width = 740
+  Caption = 'LightIRC'
+  ClientHeight = 378
+  ClientWidth = 740
+  Menu = MainMenu
+  LCLVersion = '0.9.30.2'
+  Visible = True
+  object EditMensagem: TEdit
+    Left = 0
+    Height = 23
+    Top = 355
+    Width = 740
+    Align = alBottom
+    OnKeyUp = EditMensagemKeyUp
+    TabOrder = 0
+  end
+  object PageControl: TPageControl
+    Left = 0
+    Height = 355
+    Top = 0
+    Width = 740
+    ActivePage = TabSheetCanal
+    Align = alClient
+    TabIndex = 1
+    TabOrder = 1
+    object TabSheetServidor: TTabSheet
+      Caption = 'Servidor'
+      ClientHeight = 327
+      ClientWidth = 732
+      object MemoServidor: TMemo
+        Left = 0
+        Height = 327
+        Top = 0
+        Width = 732
+        Align = alClient
+        TabOrder = 0
+      end
+    end
+    object TabSheetCanal: TTabSheet
+      Caption = 'Canal'
+      ClientHeight = 327
+      ClientWidth = 732
+      object MemoCanal: TMemo
+        Left = 0
+        Height = 327
+        Top = 0
+        Width = 582
+        Align = alClient
+        TabOrder = 0
+      end
+      object MemoUsuarios: TMemo
+        Left = 582
+        Height = 327
+        Top = 0
+        Width = 150
+        Align = alRight
+        TabOrder = 1
+      end
+    end
+  end
+  object MainMenu: TMainMenu
+    left = 162
+    top = 117
+    object MenuServidor: TMenuItem
+      Caption = 'Servidor'
+      object MenuConectar: TMenuItem
+        Action = ActionConectar
+      end
+      object MenuDesconectar: TMenuItem
+        Action = Desconectar
+      end
+    end
+  end
+  object ActionList: TActionList
+    left = 326
+    top = 157
+    object ActionConectar: TAction
+      Caption = 'Conectar'
+      OnExecute = ActionConectarExecute
+    end
+    object Desconectar: TAction
+      Caption = 'ActionDesconectar'
+      OnExecute = DesconectarExecute
+    end
+  end
+end
