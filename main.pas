@@ -13,24 +13,25 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ActionCanal: TAction;
     ActionConectar: TAction;
     Desconectar: TAction;
     ActionList: TActionList;
     EditMensagem: TEdit;
     FIRC: TIdIRC;
     MainMenu: TMainMenu;
-    MemoCanal: TMemo;
-    MemoUsuarios: TMemo;
     MemoServidor: TMemo;
     MenuConectar: TMenuItem;
     MenuDesconectar: TMenuItem;
+    MenuCanal: TMenuItem;
     MenuServidor: TMenuItem;
     PageControl: TPageControl;
-    TabSheetCanal: TTabSheet;
     TabSheetServidor: TTabSheet;
+    procedure ActionCanalExecute(Sender: TObject);
     procedure ActionConectarExecute(Sender: TObject);
     procedure DesconectarExecute(Sender: TObject);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure NovoCanal(const Canal: string);
   private
     procedure Status(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
     procedure Notice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
@@ -38,6 +39,7 @@ type
     procedure Raw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
     procedure PrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
     procedure NickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
+    procedure Join(ASender: TIdContext; const ANickname, AHost, AChannel: String);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -65,8 +67,16 @@ begin
   FIRC.Nickname:= 'SapoIndy';
   FIRC.RealName:= 'Fabio Gomes';
   FIRC.Connect;
+end;
 
-  FIRC.Join('#lightirc');
+procedure TMainForm.ActionCanalExecute(Sender: TObject);
+var
+  Canal: string;
+begin
+  Canal := InputBox('Canal', 'Informe o Canal', '');
+
+  FIRC.Join(Canal);
+  NovoCanal(Canal)
 end;
 
 procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -74,8 +84,29 @@ begin
   if Key <> VK_RETURN then
      Exit;
 
-  FIRC.Say('#lightirc', EditMensagem.Text);
+  if PageControl.ActivePage = TabSheetServidor then
+     FIRC.Raw(EditMensagem.Text)
+  else
+     FIRC.Say(PageControl.ActivePage.Caption, EditMensagem.Text);
+
   EditMensagem.Clear;
+end;
+
+procedure TMainForm.NovoCanal(const Canal: string);
+var
+  Tab: TTabSheet;
+  Memo: TMemo;
+begin
+  Tab := TTabSheet.Create(PageControl);
+  Tab.PageControl := PageControl;
+  Tab.Caption := Canal;
+
+  Memo := TMemo.Create(Tab);
+  Memo.Parent := Tab;
+  Memo.Align := alClient;
+  Memo.ScrollBars := ssVertical;
+
+  PageControl.ActivePage := Tab;
 end;
 
 procedure TMainForm.Status(ASender: TObject; const AStatus: TIdStatus;
@@ -102,14 +133,23 @@ begin
 end;
 
 procedure TMainForm.PrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
+var
+  I: Integer;
 begin
-  MemoCanal.Lines.Add(ANickname + ':' + AMessage);
+  for I := 0 to PageControl.PageCount - 1 do
+    if PageControl.Page[I].Caption = ATarget then
+      TMemo(PageControl.Page[I].Controls[0]).Lines.Add(ANickname + ':' + AMessage);
 end;
 
 procedure TMainForm.NickNameListReceive(ASender: TIdContext;
   const AChannel: String; ANicknameList: TStrings);
 begin
-  MemoUsuarios.Lines.Assign(ANicknameList);
+  //MemoUsuarios.Lines.Assign(ANicknameList);
+end;
+
+procedure TMainForm.Join(ASender: TIdContext; const ANickname, AHost, AChannel: String);
+begin
+  //
 end;
 
 constructor TMainForm.Create(TheOwner: TComponent);
@@ -118,9 +158,10 @@ begin
   FIRC := TIdIRC.Create(Self);
   FIRC.OnStatus:= @Status;
   FIRC.OnNotice:= @Notice;
-  FIRC.OnMOTD:= @MOTD;
+  //FIRC.OnMOTD:= @MOTD;
   FIRC.OnPrivateMessage:= @PrivateMessage;
-  FIRC.OnNicknamesListReceived:= @NickNameListReceive;
+  //FIRC.OnNicknamesListReceived:= @NickNameListReceive;
+  FIRC.OnJoin := @Join;
 end;
 
 destructor TMainForm.Destroy;

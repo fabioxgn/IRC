@@ -1,64 +1,43 @@
 object MainForm: TMainForm
-  Left = 628
-  Height = 398
-  Top = 318
-  Width = 740
+  Left = 795
+  Height = 460
+  Top = 440
+  Width = 843
   Caption = 'LightIRC'
-  ClientHeight = 378
-  ClientWidth = 740
+  ClientHeight = 440
+  ClientWidth = 843
   Menu = MainMenu
   LCLVersion = '0.9.30.2'
   Visible = True
   object EditMensagem: TEdit
     Left = 0
     Height = 23
-    Top = 355
-    Width = 740
+    Top = 417
+    Width = 843
     Align = alBottom
     OnKeyUp = EditMensagemKeyUp
     TabOrder = 0
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 355
+    Height = 417
     Top = 0
-    Width = 740
-    ActivePage = TabSheetCanal
+    Width = 843
+    ActivePage = TabSheetServidor
     Align = alClient
-    TabIndex = 1
+    TabIndex = 0
     TabOrder = 1
     object TabSheetServidor: TTabSheet
       Caption = 'Servidor'
-      ClientHeight = 327
-      ClientWidth = 732
+      ClientHeight = 389
+      ClientWidth = 835
       object MemoServidor: TMemo
         Left = 0
-        Height = 327
+        Height = 389
         Top = 0
-        Width = 732
+        Width = 835
         Align = alClient
         TabOrder = 0
-      end
-    end
-    object TabSheetCanal: TTabSheet
-      Caption = 'Canal'
-      ClientHeight = 327
-      ClientWidth = 732
-      object MemoCanal: TMemo
-        Left = 0
-        Height = 327
-        Top = 0
-        Width = 582
-        Align = alClient
-        TabOrder = 0
-      end
-      object MemoUsuarios: TMemo
-        Left = 582
-        Height = 327
-        Top = 0
-        Width = 150
-        Align = alRight
-        TabOrder = 1
       end
     end
   end
@@ -74,6 +53,9 @@ object MainForm: TMainForm
         Action = Desconectar
       end
     end
+    object MenuCanal: TMenuItem
+      Action = ActionCanal
+    end
   end
   object ActionList: TActionList
     left = 326
@@ -85,6 +67,10 @@ object MainForm: TMainForm
     object Desconectar: TAction
       Caption = 'ActionDesconectar'
       OnExecute = DesconectarExecute
+    end
+    object ActionCanal: TAction
+      Caption = 'Canal'
+      OnExecute = ActionCanalExecute
     end
   end
 end
