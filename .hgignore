@@ -1,2 +1,4 @@
 syntax: glob
 lib/
+*.exe
+backup/
