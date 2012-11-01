@@ -17,6 +17,7 @@ type
       FChannels: TStrings;
       FActiveChannel: string;
       FIdIRC: TIdIRC;
+      procedure AddChannelMessage(const Channel, Message: string);
       procedure ConfigureIdIRC;
       procedure MessageToChannel(const Message: string);
       procedure ReadConfig;
@@ -62,10 +63,15 @@ begin
   FIdIRC.OnJoin := @OnJoin;
 end;
 
+procedure TIRC.AddChannelMessage(const Channel, Message: string);
+begin
+  (FChannels.Objects[FChannels.IndexOf(Channel)] as TStrings).Add(Message);
+end;
+
 procedure TIRC.MessageToChannel(const Message: string);
 begin
   FIdIRC.Say(FActiveChannel, Message);
-  (FChannels.Objects[FChannels.IndexOf(FActiveChannel)] as TStrings).Add(Message);
+  AddChannelMessage(FActiveChannel, Message);
 end;
 
 procedure TIRC.OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
@@ -91,19 +97,23 @@ end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
 begin
-  //TODO: mostrar em aba separada
-  FLog.Add(AMessage);
+  //Todo: Highligh caso citação
+  AddChannelMessage(ATarget, ANickname + ': ' + AMessage);
 end;
 
 procedure TIRC.OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
+var
+  S: string;
 begin
-  FLog.Add('NickNames');
-  FLog.AddStrings(ANicknameList);
+  AddChannelMessage(AChannel, 'Nick list');
+  for S in ANicknameList do;
+    AddChannelMessage(AChannel, S);
 end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
 begin
-  FLog.Add('Join: ' + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  FLog.Add('Joined: ' + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  AddChannelMessage(AChannel, 'Joined: ' + ANickname);
 end;
 
 procedure TIRC.Connect;
