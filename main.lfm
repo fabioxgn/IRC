@@ -1,13 +1,14 @@
 object MainForm: TMainForm
-  Left = 795
+  Left = 694
   Height = 460
-  Top = 440
+  Top = 294
   Width = 843
   Caption = 'LightIRC'
   ClientHeight = 440
   ClientWidth = 843
   Menu = MainMenu
-  LCLVersion = '0.9.30.2'
+  OnClose = FormClose
+  LCLVersion = '1.0.2.0'
   Visible = True
   object EditMensagem: TEdit
     Left = 0
@@ -27,6 +28,7 @@ object MainForm: TMainForm
     Align = alClient
     TabIndex = 0
     TabOrder = 1
+    OnChange = PageControlChange
     object TabSheetServidor: TTabSheet
       Caption = 'Servidor'
       ClientHeight = 389
@@ -37,6 +39,7 @@ object MainForm: TMainForm
         Top = 0
         Width = 835
         Align = alClient
+        ScrollBars = ssAutoVertical
         TabOrder = 0
       end
     end
