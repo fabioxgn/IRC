@@ -71,7 +71,7 @@ end;
 procedure TIRC.MessageToChannel(const Message: string);
 begin
   FIdIRC.Say(FActiveChannel, Message);
-  AddChannelMessage(FActiveChannel, Message);
+  AddChannelMessage(FActiveChannel, FIdIRC.UsedNickname + ': ' + Message);
 end;
 
 procedure TIRC.OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
