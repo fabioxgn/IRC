@@ -103,7 +103,10 @@ end;
 
 procedure TMainForm.PageControlChange(Sender: TObject);
 begin
-  FIRC.ActiveChannel := PageControl.ActivePage.Caption;
+  if PageControl.ActivePage = TabSheetServidor then
+    FIRC.ActiveChannel := ''
+  else
+    FIRC.ActiveChannel := PageControl.ActivePage.Caption;
 end;
 
 constructor TMainForm.Create(TheOwner: TComponent);
