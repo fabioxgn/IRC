@@ -12,6 +12,9 @@ type
     { TIRC }
 
     TOnChannelJoined = function(const Name: string): TStrings of object;
+    TOnNickListReceived = procedure(const Channel: string; List: TStrings) of object;
+    TOnUserEvent = procedure(const Channel, User: string) of object;
+
     TIRC = class
     private
       FLog: TStrings;
@@ -19,6 +22,9 @@ type
       FActiveChannel: string;
       FIdIRC: TIdIRC;
       FOnChannelJoined: TOnChannelJoined;
+      FOnNickListReceived: TOnNickListReceived;
+      FOnUserJoined: TOnUserEvent;
+      FOnUserLeft: TOnUserEvent;
       FAutoJoinChannels: TStrings;
 			FReady: Boolean;
       procedure AddChannelMessage(const Channel, Message: string);
@@ -32,11 +38,15 @@ type
       procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
       procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
       procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
+      procedure OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
     public
       property Log: TStrings read FLog write FLog;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
       property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
+      property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
+      property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
+      property OnUserLeft: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property Ready: Boolean read FReady;
       procedure AutoJoinChannels;
       procedure Connect;
@@ -83,6 +93,7 @@ begin
   FIdIRC.OnPrivateMessage:= @OnPrivateMessage;
   FIdIRC.OnNicknamesListReceived:= @OnNickNameListReceive;
   FIdIRC.OnJoin := @OnJoin;
+  FIdIRC.OnPart:= @OnLeave;
   FIdIRC.OnServerWelcome := @OnWelcome;
 end;
 
@@ -137,18 +148,21 @@ begin
 end;
 
 procedure TIRC.OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
-var
-  S: string;
 begin
-  AddChannelMessage(AChannel, 'Nick list');
-  for S in ANicknameList do;
-    AddChannelMessage(AChannel, S);
+  FOnNickListReceived(AChannel, ANicknameList);
 end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
 begin
+  FOnUserJoined(AChannel, ANickname);
   FLog.Add('Joined: ' + ANickname + ' - ' + AHost + ' - ' + AChannel);
   AddChannelMessage(AChannel, 'Joined: ' + ANickname);
+end;
+
+procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
+begin
+  FOnUserLeft(AChannel, ANickname);
+  AddChannelMessage(AChannel, 'User left: ' + ANickname + ' -' + APartMessage);
 end;
 
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
