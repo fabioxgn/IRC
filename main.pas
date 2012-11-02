@@ -8,6 +8,9 @@ uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
   Windows, IRC, SynMemo, SynEdit;
 
+const
+     WM_AFTER_SHOW = WM_USER + 300;
+
 type
 
   { TMainForm }
@@ -30,7 +33,7 @@ type
     MenuServidor: TMenuItem;
     PageControl: TPageControl;
     PopupMenuTreeView: TPopupMenu;
-    TabSheetServidor: TTabSheet;
+    TabServer: TTabSheet;
     TreeViewUsers: TTreeView;
     procedure ActionLeaveChannelExecute(Sender: TObject);
     procedure ActionConectarExecute(Sender: TObject);
@@ -51,6 +54,8 @@ type
     procedure OnUserLeft(const Channel, User: string);
     function NovoCanal(const Canal: string): TStrings;
     procedure FecharAba(const Tab: TTabSheet);
+    procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
+    procedure AfterShow;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -139,16 +144,7 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  if not FileExistsUTF8(DefaultConfigFile) then
-    MostrarConfig;
-
-  FIRC.Log := MemoServidor.Lines;
-  FIRC.Connect;
-
-  while not FIRC.Ready do
-		Application.ProcessMessages;
-
-  FIRC.AutoJoinChannels;
+  PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
 end;
 
 function TMainForm.NovoCanal(const Canal: string): TStrings;
@@ -166,6 +162,7 @@ begin
   Memo.ScrollBars := ssVertical;
 
   TreeViewUsers.Items.Add(nil, Canal);
+  TreeViewUsers.AlphaSort;
 
   PageControl.ActivePage := Tab;
   Result := Memo.Lines;
@@ -185,7 +182,7 @@ end;
 
 procedure TMainForm.PageControlChange(Sender: TObject);
 begin
-  if PageControl.ActivePage = TabSheetServidor then
+  if PageControl.ActivePage = TabServer then
     FIRC.ActiveChannel := ''
   else
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
@@ -195,6 +192,27 @@ procedure TMainForm.FecharAba(const Tab: TTabSheet);
 begin
   FIRC.LeaveCurrentChannel;
   Tab.Free;
+end;
+
+procedure TMainForm.WmAfterShow(var Msg: TMessage);
+begin
+  AfterShow;
+end;
+
+procedure TMainForm.AfterShow;
+begin
+  if not FileExistsUTF8(DefaultConfigFile) then
+    MostrarConfig;
+
+  FIRC.Log := MemoServidor.Lines;
+  FIRC.Connect;
+
+  //TODO: Timeout
+  while not FIRC.Ready do
+		Application.ProcessMessages;
+
+  FIRC.AutoJoinChannels;
+  TreeViewUsers.AlphaSort;
 end;
 
 function TMainForm.OnChannelJoined(const Nome: string): TStrings;
@@ -210,6 +228,7 @@ begin
   ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
   for User in List do
     TreeViewUsers.Items.AddChild(ChannelNode, User);
+  TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.OnUserJoined(const Channel, User: string);
@@ -218,6 +237,7 @@ var
 begin
   ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
   TreeViewUsers.Items.AddChild(ChannelNode, User);
+  TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.OnUserLeft(const Channel, User: string);

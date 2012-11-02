@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 992
+  Left = 374
   Height = 460
-  Top = 381
+  Top = 303
   Width = 877
   Caption = 'LightIRC'
   ClientHeight = 440
@@ -25,14 +25,14 @@ object MainForm: TMainForm
     Height = 417
     Top = 0
     Width = 693
-    ActivePage = TabSheetServidor
+    ActivePage = TabServer
     Align = alClient
     TabIndex = 0
     TabOrder = 1
     OnChange = PageControlChange
     Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
-    object TabSheetServidor: TTabSheet
-      Caption = 'Servidor'
+    object TabServer: TTabSheet
+      Caption = 'Server'
       ClientHeight = 389
       ClientWidth = 685
       object MemoServidor: TMemo
