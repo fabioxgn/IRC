@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 406
+  Left = 992
   Height = 460
-  Top = 354
+  Top = 381
   Width = 877
   Caption = 'LightIRC'
   ClientHeight = 440
@@ -21,10 +21,10 @@ object MainForm: TMainForm
     TabOrder = 0
   end
   object PageControl: TPageControl
-    Left = 0
-    Height = 392
-    Top = 25
-    Width = 877
+    Left = 184
+    Height = 417
+    Top = 0
+    Width = 693
     ActivePage = TabSheetServidor
     Align = alClient
     TabIndex = 0
@@ -33,28 +33,34 @@ object MainForm: TMainForm
     Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
     object TabSheetServidor: TTabSheet
       Caption = 'Servidor'
-      ClientHeight = 364
-      ClientWidth = 869
+      ClientHeight = 389
+      ClientWidth = 685
       object MemoServidor: TMemo
         Left = 0
-        Height = 364
+        Height = 389
         Top = 0
-        Width = 869
+        Width = 685
         Align = alClient
         ScrollBars = ssAutoVertical
         TabOrder = 0
       end
     end
   end
-  object Button1: TButton
+  object TreeViewUsers: TTreeView
     Left = 0
-    Height = 25
+    Height = 417
     Top = 0
-    Width = 877
-    Action = ActionCloseTab
-    Align = alTop
-    Anchors = [akTop, akLeft, akBottom]
+    Width = 184
+    Align = alLeft
+    AutoExpand = True
+    BorderStyle = bsNone
+    DefaultItemHeight = 18
+    PopupMenu = PopupMenuTreeView
+    ReadOnly = True
+    RightClickSelect = True
+    SortType = stText
     TabOrder = 2
+    Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
   end
   object MainMenu: TMainMenu
     left = 162
@@ -76,6 +82,7 @@ object MainForm: TMainForm
     end
   end
   object ActionList: TActionList
+    OnUpdate = ActionListUpdate
     left = 326
     top = 157
     object ActionConectar: TAction
@@ -86,9 +93,9 @@ object MainForm: TMainForm
       Caption = 'Desconectar'
       OnExecute = ActionDesconectarExecute
     end
-    object ActionCloseTab: TAction
-      Caption = 'Fechar Aba'
-      OnExecute = ActionCloseTabExecute
+    object ActionLeaveChannel: TAction
+      Caption = 'Leave'
+      OnExecute = ActionLeaveChannelExecute
     end
     object ActionConfig: TAction
       Caption = 'Config'
@@ -97,6 +104,13 @@ object MainForm: TMainForm
     object ActionJoinChannel: TAction
       Caption = 'Join Channel'
       OnExecute = ActionJoinChannelExecute
+    end
+  end
+  object PopupMenuTreeView: TPopupMenu
+    left = 376
+    top = 129
+    object MenuItem1: TMenuItem
+      Action = ActionLeaveChannel
     end
   end
 end
