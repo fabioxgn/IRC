@@ -1,7 +1,7 @@
 object FormConfig: TFormConfig
-  Left = 315
+  Left = 626
   Height = 331
-  Top = 374
+  Top = 387
   Width = 324
   Caption = 'Config'
   ClientHeight = 331
@@ -55,7 +55,7 @@ object FormConfig: TFormConfig
     Action = ActionOK
     Default = True
     ModalResult = 1
-    TabOrder = 2
+    TabOrder = 7
   end
   object EditUserName: TLabeledEdit
     Left = 96
@@ -74,7 +74,7 @@ object FormConfig: TFormConfig
     EditLabel.Caption = 'User Name:'
     EditLabel.ParentColor = False
     LabelPosition = lpLeft
-    TabOrder = 3
+    TabOrder = 2
   end
   object EditNickName: TLabeledEdit
     Left = 96
@@ -93,7 +93,7 @@ object FormConfig: TFormConfig
     EditLabel.Caption = 'Nick:'
     EditLabel.ParentColor = False
     LabelPosition = lpLeft
-    TabOrder = 4
+    TabOrder = 3
   end
   object EditRealName: TLabeledEdit
     Left = 96
@@ -131,7 +131,7 @@ object FormConfig: TFormConfig
     EditLabel.Caption = 'Alternate Nick:'
     EditLabel.ParentColor = False
     LabelPosition = lpLeft
-    TabOrder = 6
+    TabOrder = 4
   end
   object MemoChannels: TMemo
     Left = 96
@@ -139,7 +139,7 @@ object FormConfig: TFormConfig
     Top = 200
     Width = 214
     ScrollBars = ssVertical
-    TabOrder = 7
+    TabOrder = 6
   end
   object Label1: TLabel
     Left = 40
