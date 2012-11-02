@@ -29,6 +29,7 @@ type
 			FReady: Boolean;
       procedure AddChannelMessage(const Channel, Message: string);
       procedure ConfigureIdIRC;
+      function GetUserName: string;
       procedure MessageToChannel(const Message: string);
       procedure ReadConfig;
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
@@ -48,12 +49,13 @@ type
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
       property OnUserLeft: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property Ready: Boolean read FReady;
+      property UserName: string read GetUserName;
       procedure AutoJoinChannels;
       procedure Connect;
       procedure Disconnect;
       procedure JoinChannel(const Name: string);
+      procedure LeaveChannel(const Name: string);
       procedure SendMessage(const Message: string);
-      procedure LeaveCurrentChannel;
       constructor Create;
       destructor Destroy; override;
     end;
@@ -95,6 +97,11 @@ begin
   FIdIRC.OnJoin := @OnJoin;
   FIdIRC.OnPart:= @OnLeave;
   FIdIRC.OnServerWelcome := @OnWelcome;
+end;
+
+function TIRC.GetUserName: string;
+begin
+  Result := FIdIRC.UsedNickname;
 end;
 
 procedure TIRC.AddChannelMessage(const Channel, Message: string);
@@ -196,17 +203,17 @@ begin
   FIdIRC.Join(Name);
 end;
 
+procedure TIRC.LeaveChannel(const Name: string);
+begin
+  FIdIRC.Part(Name);
+end;
+
 procedure TIRC.SendMessage(const Message: string);
 begin
   if FActiveChannel = '' then
      FIdIRC.Raw(Message)
   else
     MessageToChannel(Message);
-end;
-
-procedure TIRC.LeaveCurrentChannel;
-begin
-  FIdIRC.Part(FActiveChannel);
 end;
 
 constructor TIRC.Create;
