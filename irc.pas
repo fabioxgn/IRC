@@ -172,6 +172,10 @@ end;
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
 begin
   FOnUserLeft(AChannel, ANickname);
+
+  if ANickname = UserName then
+     Exit;
+
   AddChannelMessage(AChannel, 'User left: ' + ANickname + ' -' + APartMessage);
 end;
 
