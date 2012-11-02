@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  Windows, IRC, SynMemo, SynEdit;
+  Windows, IRC, SynEdit;
 
 const
      WM_AFTER_SHOW = WM_USER + 300;
