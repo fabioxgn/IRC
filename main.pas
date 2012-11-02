@@ -47,13 +47,17 @@ type
     procedure PageControlChange(Sender: TObject);
   private
     FIRC: TIRC;
+    procedure AddChannelToList(const Canal: string);
+    procedure CloseChannelTab(const Channel: string);
+    procedure ConfigureMemo(var Memo: TMemo);
+    procedure LeaveChannel(const Channel: string);
     procedure MostrarConfig;
     function OnChannelJoined(const Nome: string): TStrings;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
     procedure OnUserLeft(const Channel, User: string);
     function NovoCanal(const Canal: string): TStrings;
-    procedure FecharAba(const Tab: TTabSheet);
+    procedure RemoveChannelFromList(const Channel: string);
     procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -86,6 +90,8 @@ begin
   if Channel = '' then
 	  Exit;
 
+  //TODO: Verificar se o channel já não está ativo, se estiver selecionar a aba
+
   FIRC.JoinChannel(Channel);
 end;
 
@@ -108,23 +114,8 @@ begin
 end;
 
 procedure TMainForm.ActionLeaveChannelExecute(Sender: TObject);
-var
-  Channel: string;
-  Tab: TTabSheet;
-  I: Integer;
 begin
-  Channel := TreeViewUsers.Selected.Text;
-
-  for I := 0 to PageControl.PageCount -1 do
-  begin
-    Tab := PageControl.Pages[I];
-    if Tab.Caption = Channel then;
-    begin
-      PageControl.ActivePage := Tab;
-      FecharAba(Tab);
-      Exit;
-    end;
-  end;
+  LeaveChannel(TreeViewUsers.Selected.Text);
 end;
 
 procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word;
@@ -158,11 +149,10 @@ begin
 
   Memo := TMemo.Create(Tab);
   Memo.Parent := Tab;
-  Memo.Align := alClient;
-  Memo.ScrollBars := ssVertical;
+  //TODO: Configurar memo do servidor
+  ConfigureMemo(Memo);
 
-  TreeViewUsers.Items.Add(nil, Canal);
-  TreeViewUsers.AlphaSort;
+  AddChannelToList(Canal);
 
   PageControl.ActivePage := Tab;
   Result := Memo.Lines;
@@ -180,6 +170,48 @@ begin
   end;
 end;
 
+procedure TMainForm.CloseChannelTab(const Channel: string);
+var
+  I: Integer;
+  Tab: TTabSheet;
+begin
+  for I := 0 to PageControl.PageCount -1 do
+  begin
+    Tab := PageControl.Pages[I];
+    if Tab.Caption = Channel then
+    begin
+      Tab.Free;
+      Exit;
+    end;
+  end;
+end;
+
+procedure TMainForm.ConfigureMemo(var Memo: TMemo);
+begin
+  Memo.Align := alClient;
+  Memo.ScrollBars := ssVertical;
+  Memo.ReadOnly := True;
+  Memo.Cursor := crDefault;
+end;
+
+procedure TMainForm.AddChannelToList(const Canal: string);
+begin
+  TreeViewUsers.BeginUpdate;
+  try
+    TreeViewUsers.Items.Add(nil, Canal);
+    TreeViewUsers.AlphaSort;
+  finally
+    TreeViewUsers.EndUpdate;
+  end;
+end;
+
+procedure TMainForm.LeaveChannel(const Channel: string);
+begin
+  FIRC.LeaveChannel(Channel);
+  CloseChannelTab(Channel);
+  RemoveChannelFromList(Channel);
+end;
+
 procedure TMainForm.PageControlChange(Sender: TObject);
 begin
   if PageControl.ActivePage = TabServer then
@@ -188,10 +220,9 @@ begin
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
 end;
 
-procedure TMainForm.FecharAba(const Tab: TTabSheet);
+procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
-  FIRC.LeaveCurrentChannel;
-  Tab.Free;
+  TreeViewUsers.Items.FindTopLvlNode(Channel).Free;
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TMessage);
@@ -225,10 +256,15 @@ var
   ChannelNode: TTreeNode;
   User: string;
 begin
-  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
-  for User in List do
-    TreeViewUsers.Items.AddChild(ChannelNode, User);
-  TreeViewUsers.AlphaSort;
+  TreeViewUsers.BeginUpdate;
+  try
+	  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
+	  for User in List do
+	    TreeViewUsers.Items.AddChild(ChannelNode, User);
+	  TreeViewUsers.AlphaSort;
+  finally
+    TreeViewUsers.EndUpdate;
+  end;
 end;
 
 procedure TMainForm.OnUserJoined(const Channel, User: string);
@@ -244,6 +280,9 @@ procedure TMainForm.OnUserLeft(const Channel, User: string);
 var
   ChannelNode: TTreeNode;
 begin
+  if User = FIRC.UserName then
+    Exit;
+
   ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
   ChannelNode.FindNode(User).Free;
 end;
@@ -256,6 +295,8 @@ begin
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
   FIRC.OnUserLeft := @OnUserLeft;
+
+  ConfigureMemo(MemoServidor);
 end;
 
 destructor TMainForm.Destroy;
