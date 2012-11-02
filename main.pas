@@ -47,10 +47,10 @@ type
     procedure PageControlChange(Sender: TObject);
   private
     FIRC: TIRC;
-    procedure AddChannelToList(const Canal: string);
+    procedure AddChannelToList(const Channel: string);
+    procedure CloseChannel(const Channel: string);
     procedure CloseChannelTab(const Channel: string);
     procedure ConfigureMemo(var Memo: TMemo);
-    procedure LeaveChannel(const Channel: string);
     procedure MostrarConfig;
     function OnChannelJoined(const Nome: string): TStrings;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
@@ -58,6 +58,7 @@ type
     procedure OnUserLeft(const Channel, User: string);
     function NovoCanal(const Canal: string): TStrings;
     procedure RemoveChannelFromList(const Channel: string);
+    procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -115,7 +116,7 @@ end;
 
 procedure TMainForm.ActionLeaveChannelExecute(Sender: TObject);
 begin
-  LeaveChannel(TreeViewUsers.Selected.Text);
+     FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
 end;
 
 procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word;
@@ -194,20 +195,19 @@ begin
   Memo.Cursor := crDefault;
 end;
 
-procedure TMainForm.AddChannelToList(const Canal: string);
+procedure TMainForm.AddChannelToList(const Channel: string);
 begin
   TreeViewUsers.BeginUpdate;
   try
-    TreeViewUsers.Items.Add(nil, Canal);
+    TreeViewUsers.Items.Add(nil, Channel);
     TreeViewUsers.AlphaSort;
   finally
     TreeViewUsers.EndUpdate;
   end;
 end;
 
-procedure TMainForm.LeaveChannel(const Channel: string);
+procedure TMainForm.CloseChannel(const Channel: string);
 begin
-  FIRC.LeaveChannel(Channel);
   CloseChannelTab(Channel);
   RemoveChannelFromList(Channel);
 end;
@@ -223,6 +223,14 @@ end;
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
   TreeViewUsers.Items.FindTopLvlNode(Channel).Free;
+end;
+
+procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
+var
+  ChannelNode: TTreeNode;
+begin
+  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
+  ChannelNode.FindNode(User).Free;
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TMessage);
@@ -277,14 +285,11 @@ begin
 end;
 
 procedure TMainForm.OnUserLeft(const Channel, User: string);
-var
-  ChannelNode: TTreeNode;
 begin
   if User = FIRC.UserName then
-    Exit;
-
-  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
-  ChannelNode.FindNode(User).Free;
+    CloseChannel(Channel)
+  else
+    RemoveUserFromChannelList(User, Channel);
 end;
 
 constructor TMainForm.Create(TheOwner: TComponent);
