@@ -1,13 +1,14 @@
 object MainForm: TMainForm
-  Left = 727
+  Left = 406
   Height = 460
-  Top = 384
+  Top = 354
   Width = 877
   Caption = 'LightIRC'
   ClientHeight = 440
   ClientWidth = 877
   Menu = MainMenu
   OnClose = FormClose
+  OnShow = FormShow
   LCLVersion = '1.0.2.0'
   Visible = True
   object EditMensagem: TEdit
@@ -67,8 +68,11 @@ object MainForm: TMainForm
         Action = ActionDesconectar
       end
     end
-    object MenuCanal: TMenuItem
-      Action = ActionCanal
+    object MenuItemChannel: TMenuItem
+      Action = ActionJoinChannel
+    end
+    object MenuItemConfig: TMenuItem
+      Action = ActionConfig
     end
   end
   object ActionList: TActionList
@@ -82,13 +86,17 @@ object MainForm: TMainForm
       Caption = 'Desconectar'
       OnExecute = ActionDesconectarExecute
     end
-    object ActionCanal: TAction
-      Caption = 'Canal'
-      OnExecute = ActionCanalExecute
-    end
     object ActionCloseTab: TAction
       Caption = 'Fechar Aba'
       OnExecute = ActionCloseTabExecute
+    end
+    object ActionConfig: TAction
+      Caption = 'Config'
+      OnExecute = ActionConfigExecute
+    end
+    object ActionJoinChannel: TAction
+      Caption = 'Join Channel'
+      OnExecute = ActionJoinChannelExecute
     end
   end
 end

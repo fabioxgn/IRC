@@ -5,18 +5,22 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext ;
+  Classes, IdIRC, IdComponent, IdContext;
 
 type
 
     { TIRC }
 
+    TOnChannelJoined = function(const Name: string): TStrings of object;
     TIRC = class
     private
       FLog: TStrings;
       FChannels: TStrings;
       FActiveChannel: string;
       FIdIRC: TIdIRC;
+      FOnChannelJoined: TOnChannelJoined;
+      FAutoJoinChannels: TStrings;
+			FReady: Boolean;
       procedure AddChannelMessage(const Channel, Message: string);
       procedure ConfigureIdIRC;
       procedure MessageToChannel(const Message: string);
@@ -28,12 +32,16 @@ type
       procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
       procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
       procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
+      procedure OnWelcome(ASender: TIdContext; const AMsg: String);
     public
       property Log: TStrings read FLog write FLog;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
+      property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
+      property Ready: Boolean read FReady;
+      procedure AutoJoinChannels;
       procedure Connect;
       procedure Disconnect;
-      procedure JoinChannel(const Name: string; Memo: TStrings);
+      procedure JoinChannel(const Name: string);
       procedure SendMessage(const Message: string);
       procedure LeaveCurrentChannel;
       constructor Create;
@@ -42,15 +50,28 @@ type
 
 implementation
 
+uses config, sysutils;
+
 procedure TIRC.ReadConfig;
+var
+  C: TIRCConfig;
 begin
-  //TODO: Mostrar e salvar configurações
-  FIdIRC.Host:= 'irc.freenode.org';
-  FIdIRC.Port := 6667;
-  FIdIRC.Username:= 'SapoIndy';
-  FIdIRC.Nickname:= 'SapoIndy';
-  FIdIRC.RealName:= 'Fabio Gomes';
-  FIdIRC.AltNickname := 'SapoIndy2';
+  C := TIRCConfig.Create;
+  try
+    C.Load;
+
+    FIdIRC.Host:= C.Host;
+    FIdIRC.Port := C.Port;
+    FIdIRC.Username:= C.Username;
+    FIdIRC.Nickname:= C.Nickname;
+    FIdIRC.RealName:= C.RealName;
+    FIdIRC.AltNickname := C.AltNickname;
+
+    FAutoJoinChannels := TStringList.Create;
+    FAutoJoinChannels.AddStrings(C.Channels);
+  finally
+    C.Free;
+  end;
 end;
 
 procedure TIRC.ConfigureIdIRC;
@@ -62,11 +83,24 @@ begin
   FIdIRC.OnPrivateMessage:= @OnPrivateMessage;
   FIdIRC.OnNicknamesListReceived:= @OnNickNameListReceive;
   FIdIRC.OnJoin := @OnJoin;
+  FIdIRC.OnServerWelcome := @OnWelcome;
 end;
 
 procedure TIRC.AddChannelMessage(const Channel, Message: string);
 begin
   (FChannels.Objects[FChannels.IndexOf(Channel)] as TStrings).Add(Message);
+end;
+
+procedure TIRC.AutoJoinChannels;
+var
+  I: Integer;
+begin
+  if FAutoJoinChannels = nil then
+     Exit;
+
+  for I := 0 to FAutoJoinChannels.Count -1 do
+    JoinChannel(FAutoJoinChannels.ValueFromIndex[I]);
+  FreeAndNil(FAutoJoinChannels);
 end;
 
 procedure TIRC.MessageToChannel(const Message: string);
@@ -117,6 +151,12 @@ begin
   AddChannelMessage(AChannel, 'Joined: ' + ANickname);
 end;
 
+procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
+begin
+  FLog.Add(AMsg);
+  FReady := True;
+end;
+
 procedure TIRC.Connect;
 begin
   ReadConfig;
@@ -131,9 +171,12 @@ begin
     FIdIRC.Disconnect;
 end;
 
-procedure TIRC.JoinChannel(const Name: string; Memo: TStrings);
+procedure TIRC.JoinChannel(const Name: string);
+var
+  SL: TStrings;
 begin
-  FChannels.AddObject(Name, Memo);
+  SL := FOnChannelJoined(Name);
+  FChannels.AddObject(Name, SL);
   FIdIRC.Join(Name);
 end;
 
@@ -161,6 +204,7 @@ destructor TIRC.Destroy;
 begin
   FIdIRC.Free;
   FChannels.Free;
+  FAutoJoinChannels.Free;
   inherited;
 end;
 
