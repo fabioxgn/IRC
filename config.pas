@@ -50,8 +50,6 @@ const
 { TIRCConfig }
 
 procedure TIRCConfig.Save;
-var
-  Channel: string;
 begin
   FIni.WriteString(SectionServer, 'Host', FHost);
   FIni.WriteInteger(SectionServer, 'Port', FPort);
@@ -61,8 +59,7 @@ begin
   FIni.WriteString(SectionUser, 'RealName', FRealName);
   FIni.WriteString(SectionUser, 'AltNickname', FAltNickname);
 
-  for Channel in FChannels do
-    FIni.WriteString(SectionChannels, 'Channel', Channel);
+  FIni.WriteString(SectionChannels, 'AutoJoin', FChannels.CommaText);
 
   FIni.UpdateFile;
 end;
@@ -79,7 +76,7 @@ begin
   FRealName := FIni.ReadString(SectionUser, 'RealName', '');
   FAltNickname := FIni.ReadString(SectionUser, 'AltNickname', '');
 
-  FIni.ReadSectionValues(SectionChannels, FChannels);
+  FChannels.CommaText := FIni.ReadString(SectionChannels, 'AutoJoin', '');
 end;
 
 constructor TIRCConfig.Create;
