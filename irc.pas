@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, SysUtils, IdIRC, IdComponent, IdContext ;
+  Classes, IdIRC, IdComponent, IdContext ;
 
 type
 
@@ -35,6 +35,7 @@ type
       procedure Disconnect;
       procedure JoinChannel(const Name: string; Memo: TStrings);
       procedure SendMessage(const Message: string);
+      procedure LeaveCurrentChannel;
       constructor Create;
       destructor Destroy; override;
     end;
@@ -142,6 +143,11 @@ begin
      FIdIRC.Raw(Message)
   else
     MessageToChannel(Message);
+end;
+
+procedure TIRC.LeaveCurrentChannel;
+begin
+  FIdIRC.Part(FActiveChannel);
 end;
 
 constructor TIRC.Create;

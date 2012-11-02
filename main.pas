@@ -5,8 +5,7 @@ unit Main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, StdCtrls,
-  ComCtrls, Menus, ActnList, IdIRC, StrUtils, IdComponent, IdContext, Windows, IRC;
+  Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList, Windows, IRC;
 
 type
 
@@ -14,8 +13,10 @@ type
 
   TMainForm = class(TForm)
     ActionCanal: TAction;
+    ActionCloseTab: TAction;
     ActionConectar: TAction;
-    Desconectar: TAction;
+    Button1: TButton;
+    ActionDesconectar: TAction;
     ActionList: TActionList;
     EditMensagem: TEdit;
     MainMenu: TMainMenu;
@@ -27,14 +28,16 @@ type
     PageControl: TPageControl;
     TabSheetServidor: TTabSheet;
     procedure ActionCanalExecute(Sender: TObject);
+    procedure ActionCloseTabExecute(Sender: TObject);
     procedure ActionConectarExecute(Sender: TObject);
-    procedure DesconectarExecute(Sender: TObject);
-    procedure EditMensagemKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure ActionDesconectarExecute(Sender: TObject);
+    procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
-    function NovoCanal(const Canal: string): TStrings;
     procedure PageControlChange(Sender: TObject);
   private
     FIRC: TIRC;
+    function NovoCanal(const Canal: string): TStrings;
+    procedure FecharAba(const Tab: TTabSheet);
   public
     constructor Create(TheOwner: TComponent); override;
     procedure AfterConstruction; override;
@@ -50,7 +53,7 @@ implementation
 
 { TMainForm }
 
-procedure TMainForm.DesconectarExecute(Sender: TObject);
+procedure TMainForm.ActionDesconectarExecute(Sender: TObject);
 begin
   FIRC.Disconnect;
 end;
@@ -69,10 +72,16 @@ begin
   FIRC.JoinChannel(Canal, NovoCanal(Canal));
 end;
 
-procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TMainForm.ActionCloseTabExecute(Sender: TObject);
+begin
+  FecharAba(PageControl.ActivePage);
+end;
+
+procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word;
+  Shift: TShiftState);
 begin
   if Key <> VK_RETURN then
-     Exit;
+    Exit;
 
   FIRC.SendMessage(EditMensagem.Text);
   EditMensagem.Clear;
@@ -109,6 +118,18 @@ begin
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
 end;
 
+procedure TMainForm.FecharAba(const Tab: TTabSheet);
+begin
+  if Tab = TabSheetServidor then
+  begin
+    ShowMessage('Não é possível fechar esta aba.');
+    Exit;
+  end;
+
+  FIRC.LeaveCurrentChannel;
+  Tab.Free;
+end;
+
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -128,4 +149,3 @@ begin
 end;
 
 end.
-

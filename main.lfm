@@ -1,11 +1,11 @@
 object MainForm: TMainForm
-  Left = 694
+  Left = 727
   Height = 460
-  Top = 294
-  Width = 843
+  Top = 384
+  Width = 877
   Caption = 'LightIRC'
   ClientHeight = 440
-  ClientWidth = 843
+  ClientWidth = 877
   Menu = MainMenu
   OnClose = FormClose
   LCLVersion = '1.0.2.0'
@@ -14,35 +14,46 @@ object MainForm: TMainForm
     Left = 0
     Height = 23
     Top = 417
-    Width = 843
+    Width = 877
     Align = alBottom
     OnKeyUp = EditMensagemKeyUp
     TabOrder = 0
   end
   object PageControl: TPageControl
     Left = 0
-    Height = 417
-    Top = 0
-    Width = 843
+    Height = 392
+    Top = 25
+    Width = 877
     ActivePage = TabSheetServidor
     Align = alClient
     TabIndex = 0
     TabOrder = 1
     OnChange = PageControlChange
+    Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
     object TabSheetServidor: TTabSheet
       Caption = 'Servidor'
-      ClientHeight = 389
-      ClientWidth = 835
+      ClientHeight = 364
+      ClientWidth = 869
       object MemoServidor: TMemo
         Left = 0
-        Height = 389
+        Height = 364
         Top = 0
-        Width = 835
+        Width = 869
         Align = alClient
         ScrollBars = ssAutoVertical
         TabOrder = 0
       end
     end
+  end
+  object Button1: TButton
+    Left = 0
+    Height = 25
+    Top = 0
+    Width = 877
+    Action = ActionCloseTab
+    Align = alTop
+    Anchors = [akTop, akLeft, akBottom]
+    TabOrder = 2
   end
   object MainMenu: TMainMenu
     left = 162
@@ -53,7 +64,7 @@ object MainForm: TMainForm
         Action = ActionConectar
       end
       object MenuDesconectar: TMenuItem
-        Action = Desconectar
+        Action = ActionDesconectar
       end
     end
     object MenuCanal: TMenuItem
@@ -67,13 +78,17 @@ object MainForm: TMainForm
       Caption = 'Conectar'
       OnExecute = ActionConectarExecute
     end
-    object Desconectar: TAction
-      Caption = 'ActionDesconectar'
-      OnExecute = DesconectarExecute
+    object ActionDesconectar: TAction
+      Caption = 'Desconectar'
+      OnExecute = ActionDesconectarExecute
     end
     object ActionCanal: TAction
       Caption = 'Canal'
       OnExecute = ActionCanalExecute
+    end
+    object ActionCloseTab: TAction
+      Caption = 'Fechar Aba'
+      OnExecute = ActionCloseTabExecute
     end
   end
 end
