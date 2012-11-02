@@ -70,7 +70,7 @@ begin
   try
     C.Load;
 
-    FIdIRC.Host:= C.Host;
+    FIdIRC.Host := C.Host;
     FIdIRC.Port := C.Port;
     FIdIRC.Username:= C.Username;
     FIdIRC.Nickname:= C.Nickname;
@@ -154,6 +154,9 @@ end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
 begin
+  if ANickname = FIdIRC.UsedNickname then
+    Exit;
+
   FOnUserJoined(AChannel, ANickname);
   FLog.Add('Joined: ' + ANickname + ' - ' + AHost + ' - ' + AChannel);
   AddChannelMessage(AChannel, 'Joined: ' + ANickname);
@@ -180,7 +183,6 @@ end;
 procedure TIRC.Disconnect;
 begin
   //TODO: msg
-
   if FIdIRC.Connected then
     FIdIRC.Disconnect;
 end;
