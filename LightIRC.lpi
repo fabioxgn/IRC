@@ -4,6 +4,7 @@
     <Version Value="9"/>
     <PathDelim Value="\"/>
     <General>
+      <SessionStorage Value="InIDEConfig"/>
       <MainUnit Value="0"/>
       <Title Value="LightIRC"/>
       <UseAppBundle Value="False"/>
@@ -13,7 +14,6 @@
         <DpiAware Value="True"/>
       </XPManifest>
       <Icon Value="0"/>
-      <ActiveWindowIndexAtStart Value="0"/>
     </General>
     <i18n>
       <EnableI18N LFM="False"/>
@@ -25,7 +25,7 @@
       <CharSet Value="04B0"/>
       <StringTable ProductVersion=""/>
     </VersionInfo>
-    <BuildModes Count="1" Active="Default">
+    <BuildModes Count="1">
       <Item1 Name="Default" Default="True"/>
     </BuildModes>
     <PublishOptions>
@@ -43,15 +43,11 @@
         <PackageName Value="LCL"/>
       </Item1>
     </RequiredPackages>
-    <Units Count="26">
+    <Units Count="5">
       <Unit0>
         <Filename Value="LightIRC.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="LightIRC"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="30" Y="11"/>
-        <UsageCount Value="29"/>
       </Unit0>
       <Unit1>
         <Filename Value="main.pas"/>
@@ -60,265 +56,26 @@
         <HasResources Value="True"/>
         <ResourceBaseClass Value="Form"/>
         <UnitName Value="Main"/>
-        <IsVisibleTab Value="True"/>
-        <EditorIndex Value="6"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="74"/>
-        <CursorPos X="26" Y="83"/>
-        <UsageCount Value="29"/>
-        <Loaded Value="True"/>
-        <LoadedDesigner Value="True"/>
       </Unit1>
       <Unit2>
-        <Filename Value="Indy10\Protocols\IdIRC.pas"/>
-        <UnitName Value="IdIRC"/>
-        <EditorIndex Value="1"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="293"/>
-        <CursorPos X="15" Y="315"/>
-        <UsageCount Value="12"/>
-        <Loaded Value="True"/>
-      </Unit2>
-      <Unit3>
-        <Filename Value="Indy10\System\IdGlobal.pas"/>
-        <UnitName Value="IdGlobal"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="4775"/>
-        <CursorPos X="3" Y="4793"/>
-        <UsageCount Value="11"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="Indy10\Core\IdIOHandler.pas"/>
-        <UnitName Value="IdIOHandler"/>
-        <EditorIndex Value="3"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="1469"/>
-        <CursorPos X="1" Y="1491"/>
-        <UsageCount Value="11"/>
-        <Loaded Value="True"/>
-      </Unit4>
-      <Unit5>
-        <Filename Value="Indy10\System\IdComponent.pas"/>
-        <UnitName Value="IdComponent"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="138"/>
-        <CursorPos X="1" Y="158"/>
-        <UsageCount Value="11"/>
-      </Unit5>
-      <Unit6>
-        <Filename Value="Indy10\System\IdException.pas"/>
-        <UnitName Value="IdException"/>
-        <EditorIndex Value="4"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="71"/>
-        <CursorPos X="1" Y="112"/>
-        <UsageCount Value="12"/>
-        <Loaded Value="True"/>
-      </Unit6>
-      <Unit7>
-        <Filename Value="Indy10\Core\IdContext.pas"/>
-        <UnitName Value="IdContext"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="65"/>
-        <CursorPos X="3" Y="82"/>
-        <UsageCount Value="11"/>
-      </Unit7>
-      <Unit8>
-        <Filename Value="Indy10\Core\IdCmdTCPClient.pas"/>
-        <UnitName Value="IdCmdTCPClient"/>
-        <EditorIndex Value="2"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="186"/>
-        <CursorPos X="1" Y="208"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit8>
-      <Unit9>
-        <Filename Value="Indy10\Core\IdThread.pas"/>
-        <UnitName Value="IdThread"/>
-        <EditorIndex Value="5"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="343"/>
-        <CursorPos X="54" Y="354"/>
-        <UsageCount Value="10"/>
-        <Loaded Value="True"/>
-      </Unit9>
-      <Unit10>
-        <Filename Value="C:\lazarus\lcl\comctrls.pp"/>
-        <UnitName Value="ComCtrls"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="208"/>
-        <CursorPos X="15" Y="225"/>
-        <UsageCount Value="10"/>
-      </Unit10>
-      <Unit11>
-        <Filename Value="C:\lazarus\lcl\include\tabsheet.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="39"/>
-        <CursorPos X="7" Y="51"/>
-        <UsageCount Value="10"/>
-      </Unit11>
-      <Unit12>
-        <Filename Value="C:\lazarus\lcl\controls.pp"/>
-        <UnitName Value="Controls"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="1934"/>
-        <CursorPos X="23" Y="1950"/>
-        <UsageCount Value="10"/>
-      </Unit12>
-      <Unit13>
-        <Filename Value="C:\lazarus\lcl\include\wincontrol.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="6112"/>
-        <CursorPos X="3" Y="6111"/>
-        <UsageCount Value="10"/>
-      </Unit13>
-      <Unit14>
-        <Filename Value="Indy10\Core\IdCommandHandlers.pas"/>
-        <UnitName Value="IdCommandHandlers"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="203"/>
-        <CursorPos X="16" Y="212"/>
-        <UsageCount Value="10"/>
-      </Unit14>
-      <Unit15>
         <Filename Value="irc.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRC"/>
-        <EditorIndex Value="0"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="123"/>
-        <CursorPos X="1" Y="132"/>
-        <UsageCount Value="25"/>
-        <Loaded Value="True"/>
-      </Unit15>
-      <Unit16>
-        <Filename Value="Indy10\System\IdBaseComponent.pas"/>
-        <UnitName Value="IdBaseComponent"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="116"/>
-        <CursorPos X="17" Y="128"/>
-        <UsageCount Value="10"/>
-      </Unit16>
-      <Unit17>
-        <Filename Value="C:\lazarus\fpc\2.6.0\source\rtl\inc\objpash.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="172"/>
-        <CursorPos X="23" Y="192"/>
-        <UsageCount Value="10"/>
-      </Unit17>
-      <Unit18>
-        <Filename Value="C:\lazarus\lcl\forms.pp"/>
-        <UnitName Value="Forms"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="602"/>
-        <CursorPos X="17" Y="580"/>
-        <UsageCount Value="10"/>
-      </Unit18>
-      <Unit19>
-        <Filename Value="Indy10\Core\IdTCPConnection.pas"/>
-        <UnitName Value="IdTCPConnection"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="826"/>
-        <CursorPos X="48" Y="860"/>
-        <UsageCount Value="10"/>
-      </Unit19>
-      <Unit20>
-        <Filename Value="C:\lazarus\lcl\include\application.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="2147"/>
-        <CursorPos X="1" Y="2179"/>
-        <UsageCount Value="10"/>
-      </Unit20>
-      <Unit21>
-        <Filename Value="C:\lazarus\lcl\stdctrls.pp"/>
-        <UnitName Value="StdCtrls"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="815"/>
-        <CursorPos X="14" Y="834"/>
-        <UsageCount Value="10"/>
-      </Unit21>
-      <Unit22>
-        <Filename Value="C:\lazarus\lcl\asyncprocess.pp"/>
-        <UnitName Value="AsyncProcess"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="1" Y="1"/>
-        <UsageCount Value="10"/>
-      </Unit22>
-      <Unit23>
-        <Filename Value="C:\lazarus\fpc\2.6.0\source\rtl\objpas\classes\classesh.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="540"/>
-        <CursorPos X="18" Y="639"/>
-        <UsageCount Value="10"/>
-      </Unit23>
-      <Unit24>
-        <Filename Value="C:\lazarus\fpc\2.6.0\source\rtl\inc\systemh.inc"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="913"/>
-        <CursorPos X="11" Y="933"/>
-        <UsageCount Value="10"/>
-      </Unit24>
-      <Unit25>
-        <Filename Value="channel.pas"/>
-        <UnitName Value="Channel"/>
-        <WindowIndex Value="0"/>
-        <TopLine Value="1"/>
-        <CursorPos X="17" Y="33"/>
-        <UsageCount Value="21"/>
-      </Unit25>
+      </Unit2>
+      <Unit3>
+        <Filename Value="config.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="config"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="configform.pas"/>
+        <IsPartOfProject Value="True"/>
+        <ComponentName Value="FormConfig"/>
+        <HasResources Value="True"/>
+        <ResourceBaseClass Value="Form"/>
+        <UnitName Value="ConfigForm"/>
+      </Unit4>
     </Units>
-    <JumpHistory Count="12" HistoryIndex="11">
-      <Position1>
-        <Filename Value="Indy10\System\IdException.pas"/>
-        <Caret Line="98" Column="57" TopLine="37"/>
-      </Position1>
-      <Position2>
-        <Filename Value="irc.pas"/>
-        <Caret Line="35" Column="17" TopLine="12"/>
-      </Position2>
-      <Position3>
-        <Filename Value="irc.pas"/>
-        <Caret Line="132" Column="13" TopLine="124"/>
-      </Position3>
-      <Position4>
-        <Filename Value="irc.pas"/>
-        <Caret Line="134" Column="10" TopLine="124"/>
-      </Position4>
-      <Position5>
-        <Filename Value="Indy10\System\IdException.pas"/>
-        <Caret Line="112" Column="1" TopLine="71"/>
-      </Position5>
-      <Position6>
-        <Filename Value="Indy10\Core\IdThread.pas"/>
-        <Caret Line="360" Column="1" TopLine="343"/>
-      </Position6>
-      <Position7>
-        <Filename Value="Indy10\Core\IdCmdTCPClient.pas"/>
-        <Caret Line="208" Column="1" TopLine="186"/>
-      </Position7>
-      <Position8>
-        <Filename Value="Indy10\Core\IdThread.pas"/>
-        <Caret Line="360" Column="1" TopLine="343"/>
-      </Position8>
-      <Position9>
-        <Filename Value="Indy10\Core\IdCmdTCPClient.pas"/>
-        <Caret Line="208" Column="1" TopLine="186"/>
-      </Position9>
-      <Position10>
-        <Filename Value="Indy10\Core\IdIOHandler.pas"/>
-        <Caret Line="1315" Column="1" TopLine="1296"/>
-      </Position10>
-      <Position11>
-        <Filename Value="Indy10\Core\IdIOHandler.pas"/>
-        <Caret Line="1491" Column="1" TopLine="1469"/>
-      </Position11>
-      <Position12>
-        <Filename Value="Indy10\System\IdException.pas"/>
-        <Caret Line="112" Column="1" TopLine="71"/>
-      </Position12>
-    </JumpHistory>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
@@ -331,7 +88,16 @@
       <OtherUnitFiles Value="Indy10\Core;Indy10\Protocols;Indy10\System"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
+    <CodeGeneration>
+      <SmartLinkUnit Value="True"/>
+    </CodeGeneration>
     <Linking>
+      <Debugging>
+        <GenerateDebugInfo Value="False"/>
+        <UseLineInfoUnit Value="False"/>
+        <StripSymbols Value="True"/>
+      </Debugging>
+      <LinkSmart Value="True"/>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
@@ -346,11 +112,6 @@
     </Other>
   </CompilerOptions>
   <Debugging>
-    <Watches Count="1">
-      <Item1>
-        <Expression Value="Teste"/>
-      </Item1>
-    </Watches>
     <Exceptions Count="3">
       <Item1>
         <Name Value="EAbort"/>
