@@ -1,0 +1,160 @@
+object FormConfig: TFormConfig
+  Left = 315
+  Height = 331
+  Top = 374
+  Width = 324
+  Caption = 'Config'
+  ClientHeight = 331
+  ClientWidth = 324
+  FormStyle = fsStayOnTop
+  Position = poMainFormCenter
+  LCLVersion = '1.0.2.0'
+  object EditHost: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 8
+    Width = 216
+    EditLabel.AnchorSideTop.Control = EditHost
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditHost
+    EditLabel.AnchorSideBottom.Control = EditHost
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 64
+    EditLabel.Height = 16
+    EditLabel.Top = 11
+    EditLabel.Width = 29
+    EditLabel.Caption = 'Host:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 0
+  end
+  object EditPort: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 40
+    Width = 80
+    EditLabel.AnchorSideTop.Control = EditPort
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditPort
+    EditLabel.AnchorSideBottom.Control = EditPort
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 67
+    EditLabel.Height = 16
+    EditLabel.Top = 43
+    EditLabel.Width = 26
+    EditLabel.Caption = 'Port:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 1
+  end
+  object ButtonOK: TButton
+    Left = 237
+    Height = 25
+    Top = 296
+    Width = 75
+    Action = ActionOK
+    Default = True
+    ModalResult = 1
+    TabOrder = 2
+  end
+  object EditUserName: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 72
+    Width = 216
+    EditLabel.AnchorSideTop.Control = EditUserName
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditUserName
+    EditLabel.AnchorSideBottom.Control = EditUserName
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 31
+    EditLabel.Height = 16
+    EditLabel.Top = 75
+    EditLabel.Width = 62
+    EditLabel.Caption = 'User Name:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 3
+  end
+  object EditNickName: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 104
+    Width = 216
+    EditLabel.AnchorSideTop.Control = EditNickName
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditNickName
+    EditLabel.AnchorSideBottom.Control = EditNickName
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 65
+    EditLabel.Height = 16
+    EditLabel.Top = 107
+    EditLabel.Width = 28
+    EditLabel.Caption = 'Nick:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 4
+  end
+  object EditRealName: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 168
+    Width = 216
+    EditLabel.AnchorSideTop.Control = EditRealName
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditRealName
+    EditLabel.AnchorSideBottom.Control = EditRealName
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 32
+    EditLabel.Height = 16
+    EditLabel.Top = 171
+    EditLabel.Width = 61
+    EditLabel.Caption = 'Real Name:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 5
+  end
+  object EditAltNickName: TLabeledEdit
+    Left = 96
+    Height = 23
+    Top = 136
+    Width = 216
+    EditLabel.AnchorSideTop.Control = EditAltNickName
+    EditLabel.AnchorSideTop.Side = asrCenter
+    EditLabel.AnchorSideRight.Control = EditAltNickName
+    EditLabel.AnchorSideBottom.Control = EditAltNickName
+    EditLabel.AnchorSideBottom.Side = asrBottom
+    EditLabel.Left = 14
+    EditLabel.Height = 16
+    EditLabel.Top = 139
+    EditLabel.Width = 79
+    EditLabel.Caption = 'Alternate Nick:'
+    EditLabel.ParentColor = False
+    LabelPosition = lpLeft
+    TabOrder = 6
+  end
+  object MemoChannels: TMemo
+    Left = 96
+    Height = 90
+    Top = 200
+    Width = 214
+    ScrollBars = ssVertical
+    TabOrder = 7
+  end
+  object Label1: TLabel
+    Left = 40
+    Height = 16
+    Top = 232
+    Width = 53
+    Caption = 'Channels:'
+    ParentColor = False
+  end
+  object ActionList: TActionList
+    left = 16
+    top = 24
+    object ActionOK: TAction
+      Caption = 'OK'
+      OnExecute = ActionOKExecute
+    end
+  end
+end
