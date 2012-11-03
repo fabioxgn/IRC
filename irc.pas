@@ -30,6 +30,7 @@ type
       procedure AddChannelMessage(const Channel, Message: string);
       procedure ConfigureIdIRC;
       function GetUserName: string;
+      function HighlightUserName(const AMessage: String): string;
       procedure MessageToChannel(const Message: string);
       procedure ReadConfig;
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
@@ -108,6 +109,11 @@ begin
   Result := FIdIRC.UsedNickname;
 end;
 
+function TIRC.HighlightUserName(const AMessage: String): string;
+begin
+  Result := StringReplace(AMessage, UserName, '<' + UserName + '>', [])
+end;
+
 procedure TIRC.AddChannelMessage(const Channel, Message: string);
 begin
   (FChannels.Objects[FChannels.IndexOf(Channel)] as TStrings).Add(Message);
@@ -155,8 +161,10 @@ begin
 end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
+var
+  Mensagem: string;
 begin
-  //Todo: Highligh caso citação
+  Mensagem := HighlightUserName(AMessage);
   AddChannelMessage(ATarget, '<' + ANickname +'>' + ': ' + AMessage);
 end;
 
