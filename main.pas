@@ -6,10 +6,10 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, Windows, IRC;
+  ExtCtrls, LCLIntf, LMessages, LCLType, IRC;
 
 const
-     WM_AFTER_SHOW = WM_USER + 300;
+     LM_AFTER_SHOW = LM_USER + 300;
 
 type
 
@@ -67,7 +67,7 @@ type
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
-    procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
+    procedure WmAfterShow(var Msg: TLMessage); message LM_AFTER_SHOW;
     procedure AfterShow;
   public
     constructor Create(TheOwner: TComponent); override;
@@ -144,7 +144,7 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
+  PostMessage(Self.Handle, LM_AFTER_SHOW, 0, 0);
 end;
 
 procedure TMainForm.FormWindowStateChange(Sender: TObject);
@@ -301,7 +301,7 @@ begin
   ConfigureMemo(Memo);
 end;
 
-procedure TMainForm.WmAfterShow(var Msg: TMessage);
+procedure TMainForm.WmAfterShow(var Msg: TLMessage);
 begin
   AfterShow;
 end;
