@@ -2,3 +2,10 @@ syntax: glob
 lib/
 *.exe
 backup/
+*.o
+*.ppu
+*.compiled
+*.obj
+*.res
+*.dbg
+config.ini
