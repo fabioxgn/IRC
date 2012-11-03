@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 299
+  Left = 261
   Height = 653
-  Top = 219
+  Top = 199
   Width = 1177
   HorzScrollBar.Page = 1177
   VertScrollBar.Page = 633
@@ -113,7 +113,7 @@ object MainForm: TMainForm
       OnExecute = ActionDesconectarExecute
     end
     object ActionLeaveChannel: TAction
-      Caption = 'Leave'
+      Caption = 'Leave Channel'
       OnExecute = ActionLeaveChannelExecute
     end
     object ActionConfig: TAction
@@ -124,12 +124,26 @@ object MainForm: TMainForm
       Caption = 'Join Channel'
       OnExecute = ActionJoinChannelExecute
     end
+    object ActionCloseChat: TAction
+      Caption = 'Close Chat'
+      OnExecute = ActionCloseChatExecute
+    end
+    object ActionChat: TAction
+      Caption = 'Chat'
+      OnExecute = ActionChatExecute
+    end
   end
   object PopupMenuTreeView: TPopupMenu
-    left = 376
-    top = 129
+    left = 432
+    top = 136
     object MenuItem1: TMenuItem
       Action = ActionLeaveChannel
+    end
+    object MenuItem2: TMenuItem
+      Action = ActionCloseChat
+    end
+    object MenuItem3: TMenuItem
+      Action = ActionChat
     end
   end
 end

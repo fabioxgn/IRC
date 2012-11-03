@@ -16,6 +16,8 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ActionChat: TAction;
+    ActionCloseChat: TAction;
     ActionJoinChannel: TAction;
     ActionConfig: TAction;
     ActionLeaveChannel: TAction;
@@ -28,6 +30,8 @@ type
     MenuConectar: TMenuItem;
     MenuDesconectar: TMenuItem;
     MenuItem1: TMenuItem;
+    MenuItem2: TMenuItem;
+    MenuItem3: TMenuItem;
     MenuItemChannel: TMenuItem;
     MenuItemConfig: TMenuItem;
     MenuServidor: TMenuItem;
@@ -36,6 +40,8 @@ type
     PopupMenuTreeView: TPopupMenu;
     TabServer: TTabSheet;
     TreeViewUsers: TTreeView;
+    procedure ActionChatExecute(Sender: TObject);
+    procedure ActionCloseChatExecute(Sender: TObject);
     procedure ActionLeaveChannelExecute(Sender: TObject);
     procedure ActionConectarExecute(Sender: TObject);
     procedure ActionConfigExecute(Sender: TObject);
@@ -68,6 +74,7 @@ type
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
+    procedure SelectChannelTab;
     procedure WmAfterShow(var Msg: TLMessage); message LM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -108,10 +115,29 @@ end;
 
 procedure TMainForm.ActionListUpdate(AAction: TBasicAction; var Handled: Boolean);
 var
-  SelectedNode: TTreeNode;
+  IsChannel: Boolean;
 begin
-  SelectedNode := TreeViewUsers.Selected;
-  ActionLeaveChannel.Visible := (SelectedNode <> nil) and (SelectedNode.Parent = nil);
+  if TreeViewUsers.Selected = nil then
+  begin
+     ActionLeaveChannel.Visible := False;
+     ActionCloseChat.Visible := False;
+     ActionChat.Visible := False;
+     Exit;
+  end;
+
+  IsChannel := TreeViewUsers.Selected.Parent = nil;
+  ActionLeaveChannel.Visible :=  IsChannel;
+
+  if IsChannel then
+  begin
+     ActionCloseChat.Visible := False;
+     ActionChat.Visible := False;
+  end
+  else
+  begin
+    ActionCloseChat.Visible := GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)) <> nil;
+    ActionChat.Visible := not ActionCloseChat.Visible;
+  end;
 end;
 
 procedure TMainForm.ActionConectarExecute(Sender: TObject);
@@ -127,6 +153,16 @@ end;
 procedure TMainForm.ActionLeaveChannelExecute(Sender: TObject);
 begin
   FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
+end;
+
+procedure TMainForm.ActionCloseChatExecute(Sender: TObject);
+begin
+  GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)).Free;
+end;
+
+procedure TMainForm.ActionChatExecute(Sender: TObject);
+begin
+  SelectChannelTab;
 end;
 
 procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
@@ -240,14 +276,8 @@ begin
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
-var
-  Selected: TTreeNode;
 begin
-  Selected := TreeViewUsers.Selected;
-  if (Selected = nil) or (Selected.Parent = nil) then
-     Exit;
-
-  PageControl.ActivePage := GetChannelTab(Selected.Text);
+  SelectChannelTab;
 end;
 
 procedure TMainForm.TreeViewUsersSelectionChanged(Sender: TObject);
@@ -311,6 +341,14 @@ begin
   Memo := TMemo.Create(Result);
   Memo.Parent := Result;
   ConfigureMemo(Memo);
+end;
+
+procedure TMainForm.SelectChannelTab;
+begin
+  if (TreeViewUsers.Selected = nil) or (TreeViewUsers.Selected.Parent = nil) then
+     Exit;
+
+  PageControl.ActivePage := GetChannelTab(TreeViewUsers.Selected.Text);
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TLMessage);
