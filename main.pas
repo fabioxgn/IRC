@@ -237,18 +237,17 @@ end;
 procedure TMainForm.TreeViewUsersSelectionChanged(Sender: TObject);
 var
   Selected: TTreeNode;
-  Channel: string;
+  Tab: TTabSheet;
 begin
   Selected := TreeViewUsers.Selected;
   if Selected = nil then
      Exit;
 
-  if Selected.Parent <> nil then
-    Channel := Selected.Parent.Text
-  else
-    Channel := Selected.Text;
+  Tab := GetTabByName(Selected.Text);
+  if Tab = nil then
+    Exit;
 
-  PageControl.ActivePage := GetTabByName(Channel);
+  PageControl.ActivePage := Tab;
 end;
 
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
