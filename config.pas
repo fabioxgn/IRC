@@ -65,8 +65,6 @@ begin
 end;
 
 procedure TIRCConfig.Load;
-var
-  Channel: string;
 begin
   FHost := FIni.ReadString(SectionServer, 'Host', '');
   FPort := FIni.ReadInteger(SectionServer, 'Port', 6667);
