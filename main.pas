@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, Windows, IRC, SynEdit;
+  ExtCtrls, Windows, IRC;
 
 const
      WM_AFTER_SHOW = WM_USER + 300;
@@ -57,7 +57,7 @@ type
     procedure MostrarConfig;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
-    procedure OnUserLeft(const Channel, User: string);
+    procedure OnUserParted(const Channel, User: string);
     function OnJoinChannel(const Channel: string): TStrings;
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
@@ -75,7 +75,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, messages, sysutils, strutils;
+uses FileUtil, ConfigForm, config, messages, sysutils;
 
 {$R *.lfm}
 
@@ -289,13 +289,7 @@ begin
 
   FIRC.Log := MemoServidor.Lines;
   FIRC.Connect;
-
-  //TODO: Timeout
-  while not FIRC.Ready do
-		Application.ProcessMessages;
-
   FIRC.AutoJoinChannels;
-  TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.OnNickListReceived(const Channel: string; List: TStrings);
@@ -323,7 +317,7 @@ begin
   TreeViewUsers.AlphaSort;
 end;
 
-procedure TMainForm.OnUserLeft(const Channel, User: string);
+procedure TMainForm.OnUserParted(const Channel, User: string);
 begin
   if User = FIRC.UserName then
     CloseChannel(Channel)
@@ -338,7 +332,7 @@ begin
   FIRC.OnChannelJoined := @OnJoinChannel;
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
-  FIRC.OnUserLeft := @OnUserLeft;
+  FIRC.OnUserParted := @OnUserParted;
 
   ConfigureMemo(MemoServidor);
 end;

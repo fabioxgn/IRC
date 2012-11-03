@@ -47,7 +47,7 @@ type
       property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
-      property OnUserLeft: TOnUserEvent read FOnUserLeft write FOnUserLeft;
+      property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property Ready: Boolean read FReady;
       property UserName: string read GetUserName;
       procedure AutoJoinChannels;
@@ -63,6 +63,10 @@ type
 implementation
 
 uses config, sysutils;
+
+resourcestring
+  StrJoined = '* Joined: ';
+  StrParted = '* Parted: ';
 
 procedure TIRC.ReadConfig;
 var
@@ -130,6 +134,8 @@ end;
 procedure TIRC.OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
 begin
   FLog.Add(AStatusText);
+  if AStatus = hsConnected then
+    FReady := True;
 end;
 
 procedure TIRC.OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
@@ -151,7 +157,7 @@ end;
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
 begin
   //Todo: Highligh caso citação
-  AddChannelMessage(ATarget, ANickname + ': ' + AMessage);
+  AddChannelMessage(ATarget, '<' + ANickname +'>' + ': ' + AMessage);
 end;
 
 procedure TIRC.OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
@@ -165,8 +171,8 @@ begin
     Exit;
 
   FOnUserJoined(AChannel, ANickname);
-  FLog.Add('Joined: ' + ANickname + ' - ' + AHost + ' - ' + AChannel);
-  AddChannelMessage(AChannel, 'Joined: ' + ANickname);
+  FLog.Add(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  AddChannelMessage(AChannel, StrJoined + ANickname);
 end;
 
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
@@ -176,13 +182,12 @@ begin
   if ANickname = UserName then
      Exit;
 
-  AddChannelMessage(AChannel, 'User left: ' + ANickname + ' -' + APartMessage);
+  AddChannelMessage(AChannel, StrParted + ANickname + ' -' + APartMessage);
 end;
 
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
 begin
   FLog.Add(AMsg);
-  FReady := True;
 end;
 
 procedure TIRC.Connect;
@@ -193,9 +198,7 @@ end;
 
 procedure TIRC.Disconnect;
 begin
-  //TODO: msg
-  if FIdIRC.Connected then
-    FIdIRC.Disconnect;
+  FIdIRC.Disconnect;
 end;
 
 procedure TIRC.JoinChannel(const Name: string);
