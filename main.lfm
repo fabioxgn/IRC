@@ -26,6 +26,7 @@ object MainForm: TMainForm
     ScrollBars = ssAutoBoth
     SortType = stText
     TabOrder = 0
+    OnSelectionChanged = TreeViewUsersSelectionChanged
     Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
   end
   object PanelRight: TPanel

@@ -46,6 +46,7 @@ type
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
+    procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
     FIRC: TIRC;
     procedure AddChannelToList(const Channel: string);
@@ -60,6 +61,7 @@ type
     function NovoCanal(const Canal: string): TStrings;
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
+    function GetTabByName(const Channel: string): TTabSheet;
     procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -176,19 +178,8 @@ begin
 end;
 
 procedure TMainForm.CloseChannelTab(const Channel: string);
-var
-  I: Integer;
-  Tab: TTabSheet;
 begin
-  for I := 0 to PageControl.PageCount -1 do
-  begin
-    Tab := PageControl.Pages[I];
-    if Tab.Caption = Channel then
-    begin
-      Tab.Free;
-      Exit;
-    end;
-  end;
+  GetTabByName(Channel).Free;
 end;
 
 procedure TMainForm.ConfigureMemo(var Memo: TMemo);
@@ -196,7 +187,7 @@ begin
   Memo.Align := alClient;
   Memo.ScrollBars := ssVertical;
   Memo.ReadOnly := True;
-  Memo.Cursor := crDefault;
+  Memo.Cursor := crArrow;
   Memo.Font.Size := DefaultFontSize;
 end;
 
@@ -225,6 +216,23 @@ begin
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
 end;
 
+procedure TMainForm.TreeViewUsersSelectionChanged(Sender: TObject);
+var
+  Selected: TTreeNode;
+  Channel: string;
+begin
+  Selected := TreeViewUsers.Selected;
+  if Selected = nil then
+     Exit;
+
+  if Selected.Parent <> nil then
+    Channel := Selected.Parent.Text
+  else
+    Channel := Selected.Text;
+
+  PageControl.ActivePage := GetTabByName(Channel);
+end;
+
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
   TreeViewUsers.Items.FindTopLvlNode(Channel).Free;
@@ -236,6 +244,20 @@ var
 begin
   ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
   ChannelNode.FindNode(User).Free;
+end;
+
+function TMainForm.GetTabByName(const Channel: string): TTabSheet;
+var
+  I: Integer;
+begin
+  Result := nil;
+  for I := 0 to PageControl.PageCount -1 do
+  begin
+    Result := PageControl.Pages[I];
+    if Result.Caption = Channel then
+      Exit;
+  end;
+  Assert(Result = nil);
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TMessage);
