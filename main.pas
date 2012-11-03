@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  Windows, IRC, SynEdit;
+  ExtCtrls, Windows, IRC, SynEdit;
 
 const
      WM_AFTER_SHOW = WM_USER + 300;
@@ -32,6 +32,7 @@ type
     MenuItemConfig: TMenuItem;
     MenuServidor: TMenuItem;
     PageControl: TPageControl;
+    PanelRight: TPanel;
     PopupMenuTreeView: TPopupMenu;
     TabServer: TTabSheet;
     TreeViewUsers: TTreeView;
@@ -76,6 +77,9 @@ uses FileUtil, ConfigForm, config, messages;
 {$R *.lfm}
 
 { TMainForm }
+
+const
+  DefaultFontSize = 11;
 
 procedure TMainForm.ActionDesconectarExecute(Sender: TObject);
 begin
@@ -193,6 +197,7 @@ begin
   Memo.ScrollBars := ssVertical;
   Memo.ReadOnly := True;
   Memo.Cursor := crDefault;
+  Memo.Font.Size := DefaultFontSize;
 end;
 
 procedure TMainForm.AddChannelToList(const Channel: string);
