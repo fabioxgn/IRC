@@ -49,19 +49,20 @@ type
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
     FIRC: TIRC;
-    procedure AddChannelToList(const Channel: string);
+    procedure AddChannelToTree(const Channel: string);
     procedure CloseChannel(const Channel: string);
     procedure CloseChannelTab(const Channel: string);
     procedure ConfigureMemo(var Memo: TMemo);
+    function FindChannelNode(const Channel: string): TTreeNode;
     procedure MostrarConfig;
-    function OnChannelJoined(const Nome: string): TStrings;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
     procedure OnUserLeft(const Channel, User: string);
-    function NovoCanal(const Canal: string): TStrings;
+    function OnJoinChannel(const Channel: string): TStrings;
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
+    function NewChannelTab(const Channel: string): TTabSheet;
     procedure WmAfterShow(var Msg: TMessage); message WM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -74,7 +75,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, messages;
+uses FileUtil, ConfigForm, config, messages, sysutils, strutils;
 
 {$R *.lfm}
 
@@ -96,8 +97,6 @@ begin
 
   if Channel = '' then
 	  Exit;
-
-  //TODO: Verificar se o channel já não está ativo, se estiver selecionar a aba
 
   FIRC.JoinChannel(Channel);
 end;
@@ -122,11 +121,10 @@ end;
 
 procedure TMainForm.ActionLeaveChannelExecute(Sender: TObject);
 begin
-     FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
+  FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
 end;
 
-procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word;
-  Shift: TShiftState);
+procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
 begin
   if Key <> VK_RETURN then
     Exit;
@@ -145,23 +143,20 @@ begin
   PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
 end;
 
-function TMainForm.NovoCanal(const Canal: string): TStrings;
+function TMainForm.OnJoinChannel(const Channel: string): TStrings;
 var
   Tab: TTabSheet;
   Memo: TMemo;
 begin
-  Tab := TTabSheet.Create(PageControl);
-  Tab.PageControl := PageControl;
-  Tab.Caption := Canal;
+  Tab := GetTabByName(Channel);
+  if Tab = nil then
+    Tab := NewChannelTab(Channel);
 
-  Memo := TMemo.Create(Tab);
-  Memo.Parent := Tab;
-  //TODO: Configurar memo do servidor
-  ConfigureMemo(Memo);
-
-  AddChannelToList(Canal);
+  Memo := Tab.Components[0] as TMemo; //TODO: Melhorar essa gambi
 
   PageControl.ActivePage := Tab;
+  AddChannelToTree(Channel);
+
   Result := Memo.Lines;
 end;
 
@@ -191,8 +186,18 @@ begin
   Memo.Font.Size := DefaultFontSize;
 end;
 
-procedure TMainForm.AddChannelToList(const Channel: string);
+function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
 begin
+  Result := TreeViewUsers.Items.GetFirstNode;
+  while Assigned(Result) and (UpperCase(Result.Text) <> UpperCase(Channel)) do
+    Result := Result.GetNextSibling;
+end;
+
+procedure TMainForm.AddChannelToTree(const Channel: string);
+begin
+  if FindChannelNode(Channel) <> nil then
+    Exit;
+
   TreeViewUsers.BeginUpdate;
   try
     TreeViewUsers.Items.Add(nil, Channel);
@@ -250,14 +255,26 @@ function TMainForm.GetTabByName(const Channel: string): TTabSheet;
 var
   I: Integer;
 begin
-  Result := nil;
   for I := 0 to PageControl.PageCount -1 do
   begin
     Result := PageControl.Pages[I];
-    if Result.Caption = Channel then
+    if UpperCase(Result.Caption) = UpperCase(Channel) then
       Exit;
   end;
-  Assert(Result = nil);
+  Result := nil;
+end;
+
+function TMainForm.NewChannelTab(const Channel: string): TTabSheet;
+var
+  Memo: TMemo;
+begin
+  Result := TTabSheet.Create(PageControl);
+  Result.PageControl := PageControl;
+  Result.Caption := Channel;
+
+  Memo := TMemo.Create(Result);
+  Memo.Parent := Result;
+  ConfigureMemo(Memo);
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TMessage);
@@ -279,11 +296,6 @@ begin
 
   FIRC.AutoJoinChannels;
   TreeViewUsers.AlphaSort;
-end;
-
-function TMainForm.OnChannelJoined(const Nome: string): TStrings;
-begin
-  Result := NovoCanal(Nome);
 end;
 
 procedure TMainForm.OnNickListReceived(const Channel: string; List: TStrings);
@@ -323,7 +335,7 @@ constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   FIRC := TIRC.Create;
-  FIRC.OnChannelJoined := @OnChannelJoined;
+  FIRC.OnChannelJoined := @OnJoinChannel;
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
   FIRC.OnUserLeft := @OnUserLeft;
