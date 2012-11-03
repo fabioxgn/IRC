@@ -52,7 +52,7 @@ begin
   FConfig.Nickname := EditNickName.Text;
   FConfig.AltNickname := EditAltNickName.Text;
   FConfig.RealName := EditRealName.Text;
-  FConfig.Channels.AddStrings(MemoChannels.Lines);
+  FConfig.Channels.CommaText := MemoChannels.Lines.CommaText;
   FConfig.Save;
 end;
 
