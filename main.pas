@@ -47,6 +47,7 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
+    procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
     FIRC: TIRC;
@@ -55,6 +56,7 @@ type
     procedure CloseChannelTab(const Channel: string);
     procedure ConfigureMemo(var Memo: TMemo);
     function FindChannelNode(const Channel: string): TTreeNode;
+    function GetChannelTab(const Channel: string): TTabSheet;
     procedure MostrarConfig;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
@@ -155,9 +157,7 @@ var
   Tab: TTabSheet;
   Memo: TMemo;
 begin
-  Tab := GetTabByName(Channel);
-  if Tab = nil then
-    Tab := NewChannelTab(Channel);
+  Tab := GetChannelTab(Channel);
 
   if Message = '' then
     Exit;
@@ -168,8 +168,7 @@ end;
 
 procedure TMainForm.OnChannelJoined(const Channel: string);
 begin
-  OnMessageReceived(Channel, '');
-  PageControl.ActivePage := PageControl.Pages[PageControl.PageCount -1];
+  PageControl.ActivePage := GetChannelTab(Channel);
   AddChannelToTree(Channel);
 end;
 
@@ -206,18 +205,20 @@ begin
     Result := Result.GetNextSibling;
 end;
 
+function TMainForm.GetChannelTab(const Channel: string): TTabSheet;
+begin
+  Result := GetTabByName(Channel);
+  if Result = nil then
+    Result := NewChannelTab(Channel);
+end;
+
 procedure TMainForm.AddChannelToTree(const Channel: string);
 begin
   if FindChannelNode(Channel) <> nil then
     Exit;
 
-  TreeViewUsers.BeginUpdate;
-  try
-    TreeViewUsers.Items.Add(nil, Channel);
-    TreeViewUsers.AlphaSort;
-  finally
-    TreeViewUsers.EndUpdate;
-  end;
+  TreeViewUsers.Items.Add(nil, Channel);
+  TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.CloseChannel(const Channel: string);
@@ -232,6 +233,17 @@ begin
     FIRC.ActiveChannel := ''
   else
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
+end;
+
+procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
+var
+  Selected: TTreeNode;
+begin
+  Selected := TreeViewUsers.Selected;
+  if (Selected = nil) or (Selected.Parent = nil) then
+     Exit;
+
+  PageControl.ActivePage := GetChannelTab(Selected.Text);
 end;
 
 procedure TMainForm.TreeViewUsersSelectionChanged(Sender: TObject);

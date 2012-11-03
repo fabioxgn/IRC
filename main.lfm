@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 138
+  Left = 235
   Height = 653
-  Top = 200
+  Top = 278
   Width = 1177
   HorzScrollBar.Page = 1177
   VertScrollBar.Page = 633
@@ -30,6 +30,7 @@ object MainForm: TMainForm
     ScrollBars = ssAutoBoth
     SortType = stText
     TabOrder = 0
+    OnDblClick = TreeViewUsersDblClick
     OnSelectionChanged = TreeViewUsersSelectionChanged
     Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
   end

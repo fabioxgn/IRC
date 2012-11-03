@@ -46,6 +46,7 @@ type
       procedure OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
       procedure SendMessage;
+      procedure SendChannelJoined;
     public
       property Log: TStrings read FLog write FLog;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
@@ -194,7 +195,11 @@ end;
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
 begin
   if ANickname = FIdIRC.UsedNickname then
+  begin
+    FChannel := AChannel;
+    TIdSync.SynchronizeMethod(@SendChannelJoined);
     Exit;
+  end;
 
   FOnUserJoined(AChannel, ANickname);
   FLog.Add(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
@@ -221,6 +226,11 @@ begin
   FOnMessageReceived(FChannel, FMessage);
 end;
 
+procedure TIRC.SendChannelJoined;
+begin
+  FOnChannelJoined(FChannel);
+end;
+
 procedure TIRC.Connect;
 begin
   ReadConfig;
@@ -234,7 +244,6 @@ end;
 
 procedure TIRC.JoinChannel(const Name: string);
 begin
-  FOnChannelJoined(Name);
   FIdIRC.Join(Name);
 end;
 
