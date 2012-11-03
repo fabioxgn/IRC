@@ -59,7 +59,8 @@ type
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
     procedure OnUserParted(const Channel, User: string);
-    function OnJoinChannel(const Channel: string): TStrings;
+    procedure OnMessageReceived(const Channel, Message: string);
+    procedure OnChannelJoined(const Channel: string);
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
@@ -149,7 +150,7 @@ begin
   AutoScroll := WindowState <> wsMinimized;
 end;
 
-function TMainForm.OnJoinChannel(const Channel: string): TStrings;
+procedure TMainForm.OnMessageReceived(const Channel, Message: string);
 var
   Tab: TTabSheet;
   Memo: TMemo;
@@ -158,12 +159,18 @@ begin
   if Tab = nil then
     Tab := NewChannelTab(Channel);
 
+  if Message = '' then
+    Exit;
+
   Memo := Tab.Components[0] as TMemo; //TODO: Melhorar essa gambi
+  Memo.Lines.Add(Message);
+end;
 
-  PageControl.ActivePage := Tab;
+procedure TMainForm.OnChannelJoined(const Channel: string);
+begin
+  OnMessageReceived(Channel, '');
+  PageControl.ActivePage := PageControl.Pages[PageControl.PageCount -1];
   AddChannelToTree(Channel);
-
-  Result := Memo.Lines;
 end;
 
 procedure TMainForm.MostrarConfig;
@@ -335,10 +342,11 @@ constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
   FIRC := TIRC.Create;
-  FIRC.OnChannelJoined := @OnJoinChannel;
+  FIRC.OnMessageReceived := @OnMessageReceived;
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
   FIRC.OnUserParted := @OnUserParted;
+  FIRC.OnChannelJoined := @OnChannelJoined;
 
   ConfigureMemo(MemoServidor);
 end;
