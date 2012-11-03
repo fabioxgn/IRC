@@ -45,6 +45,7 @@ type
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
+    procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
@@ -141,6 +142,11 @@ end;
 procedure TMainForm.FormShow(Sender: TObject);
 begin
   PostMessage(Self.Handle, WM_AFTER_SHOW, 0, 0);
+end;
+
+procedure TMainForm.FormWindowStateChange(Sender: TObject);
+begin
+  AutoScroll := WindowState <> wsMinimized;
 end;
 
 function TMainForm.OnJoinChannel(const Channel: string): TStrings;

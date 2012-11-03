@@ -1,14 +1,18 @@
 object MainForm: TMainForm
-  Left = 171
+  Left = 138
   Height = 653
-  Top = 336
+  Top = 200
   Width = 1177
+  HorzScrollBar.Page = 1177
+  VertScrollBar.Page = 633
+  AutoScroll = True
   Caption = 'LightIRC'
   ClientHeight = 633
   ClientWidth = 1177
   Menu = MainMenu
   OnClose = FormClose
   OnShow = FormShow
+  OnWindowStateChange = FormWindowStateChange
   LCLVersion = '1.0.2.0'
   Visible = True
   object TreeViewUsers: TTreeView
