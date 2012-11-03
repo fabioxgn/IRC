@@ -64,6 +64,7 @@ type
     procedure OnMessageReceived(const Channel, Message: string);
     procedure OnChannelJoined(const Channel: string);
     procedure RemoveChannelFromList(const Channel: string);
+    function RemoveOPVoicePrefix(const Username: string): string;
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
@@ -79,7 +80,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, messages, sysutils;
+uses FileUtil, ConfigForm, config, sysutils;
 
 {$R *.lfm}
 
@@ -206,10 +207,13 @@ begin
 end;
 
 function TMainForm.GetChannelTab(const Channel: string): TTabSheet;
+var
+  ChannelName: string;
 begin
-  Result := GetTabByName(Channel);
+  ChannelName := RemoveOPVoicePrefix(Channel);
+  Result := GetTabByName(ChannelName);
   if Result = nil then
-    Result := NewChannelTab(Channel);
+    Result := NewChannelTab(ChannelName);
 end;
 
 procedure TMainForm.AddChannelToTree(const Channel: string);
@@ -255,7 +259,7 @@ begin
   if Selected = nil then
      Exit;
 
-  Tab := GetTabByName(Selected.Text);
+  Tab := GetTabByName(RemoveOPVoicePrefix(Selected.Text));
   if Tab = nil then
     Exit;
 
@@ -265,6 +269,14 @@ end;
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
   TreeViewUsers.Items.FindTopLvlNode(Channel).Free;
+end;
+
+function TMainForm.RemoveOPVoicePrefix(const Username: string): string;
+begin
+  if Username[1] in ['@', '+'] then
+    Result := Copy(Username, 2, MaxInt)
+  else
+    Result := Username;
 end;
 
 procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
