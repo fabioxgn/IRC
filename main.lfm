@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 261
+  Left = 309
   Height = 653
-  Top = 199
+  Top = 248
   Width = 1177
   HorzScrollBar.Page = 1177
   VertScrollBar.Page = 633
@@ -101,7 +101,6 @@ object MainForm: TMainForm
     end
   end
   object ActionList: TActionList
-    OnUpdate = ActionListUpdate
     left = 326
     top = 157
     object ActionConectar: TAction
@@ -134,6 +133,7 @@ object MainForm: TMainForm
     end
   end
   object PopupMenuTreeView: TPopupMenu
+    OnPopup = PopupMenuTreeViewPopup
     left = 432
     top = 136
     object MenuItem1: TMenuItem

@@ -47,12 +47,12 @@ type
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDesconectarExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
-    procedure ActionListUpdate(AAction: TBasicAction; var Handled: Boolean);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
+    procedure PopupMenuTreeViewPopup(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
@@ -111,33 +111,6 @@ begin
 	  Exit;
 
   FIRC.JoinChannel(Channel);
-end;
-
-procedure TMainForm.ActionListUpdate(AAction: TBasicAction; var Handled: Boolean);
-var
-  IsChannel: Boolean;
-begin
-  if TreeViewUsers.Selected = nil then
-  begin
-     ActionLeaveChannel.Visible := False;
-     ActionCloseChat.Visible := False;
-     ActionChat.Visible := False;
-     Exit;
-  end;
-
-  IsChannel := TreeViewUsers.Selected.Parent = nil;
-  ActionLeaveChannel.Visible :=  IsChannel;
-
-  if IsChannel then
-  begin
-     ActionCloseChat.Visible := False;
-     ActionChat.Visible := False;
-  end
-  else
-  begin
-    ActionCloseChat.Visible := GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)) <> nil;
-    ActionChat.Visible := not ActionCloseChat.Visible;
-  end;
 end;
 
 procedure TMainForm.ActionConectarExecute(Sender: TObject);
@@ -233,6 +206,7 @@ begin
   Memo.ReadOnly := True;
   Memo.Cursor := crArrow;
   Memo.Font.Size := DefaultFontSize;
+  Memo.TabStop := False;
 end;
 
 function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
@@ -273,6 +247,33 @@ begin
     FIRC.ActiveChannel := ''
   else
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
+end;
+
+procedure TMainForm.PopupMenuTreeViewPopup(Sender: TObject);
+var
+  IsChannel: Boolean;
+begin
+  if TreeViewUsers.Selected = nil then
+  begin
+   ActionLeaveChannel.Visible := False;
+   ActionCloseChat.Visible := False;
+   ActionChat.Visible := False;
+   Exit;
+  end;
+
+  IsChannel := TreeViewUsers.Selected.Parent = nil;
+  ActionLeaveChannel.Visible :=  IsChannel;
+
+  if IsChannel then
+  begin
+    ActionCloseChat.Visible := False;
+    ActionChat.Visible := False;
+  end
+  else
+  begin
+    ActionCloseChat.Visible := GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)) <> nil;
+    ActionChat.Visible := not ActionCloseChat.Visible;
+  end;
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
