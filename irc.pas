@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands;
 
 type
 
@@ -18,9 +18,14 @@ type
 
     TIRC = class
     private
+      FReady: Boolean;
       FChannel: string;
       FMessage: string;
+      FNickName: string;
+      FServerMessage: string;
+      FServerMessages: TStrings;
       FLog: TStrings;
+      FNickNameList: TStrings;
       FActiveChannel: string;
       FIdIRC: TIdIRC;
       FOnChannelJoined: TOnChannelJoined;
@@ -29,10 +34,12 @@ type
       FOnUserLeft: TOnUserEvent;
       FOnMessageReceived: TOnMessageReceived;
       FAutoJoinChannels: TStrings;
+      FCommands: TIRCCommand;
       procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
+      function IsInputCommand(const Message: string): Boolean;
       procedure MessageToChannel(const Message: string);
       procedure MessageReceived(const Channel, Message: string);
       procedure ReadConfig;
@@ -45,10 +52,16 @@ type
       procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
       procedure OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
+      function RemoveOPVoicePrefix(const Channel: string): string;
       procedure SendMessage;
       procedure SendChannelJoined;
+      procedure SendNickNameListReceived;
+      procedure SendParted;
+      procedure SendServerMessage;
+      procedure SendUserJoined;
     public
       property Log: TStrings read FLog write FLog;
+      property Ready: Boolean read FReady;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
       property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
@@ -68,7 +81,7 @@ type
 
 implementation
 
-uses config, IdSync, sysutils;
+uses config, IdSync, IdGlobal, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
@@ -128,6 +141,11 @@ begin
   Result := StringReplace(AMessage, UserName, Format(NickNameFormat, [UserName]), [])
 end;
 
+function TIRC.IsInputCommand(const Message: string): Boolean;
+begin
+  Result := Pos('/', TrimLeft(Message)) = 1;
+end;
+
 procedure TIRC.AutoJoinChannels;
 var
   I: Integer;
@@ -141,8 +159,11 @@ begin
 end;
 
 procedure TIRC.MessageToChannel(const Message: string);
+var
+  Channel: string;
 begin
-  FIdIRC.Say(FActiveChannel, Message);
+  Channel := RemoveOPVoicePrefix(FActiveChannel);
+  FIdIRC.Say(Channel, Message);
   MessageReceived(FActiveChannel, FormatarMensagem(UserName, Message))
 end;
 
@@ -155,7 +176,11 @@ end;
 
 procedure TIRC.OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
 begin
-  FLog.Add(AStatusText);
+  if AStatus = hsConnected then
+    FReady := True;
+
+  FServerMessage := AStatusText;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
 procedure TIRC.OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
@@ -166,12 +191,14 @@ end;
 
 procedure TIRC.OnMOTD(ASender: TIdContext; AMOTD: TStrings);
 begin
-  FLog.AddStrings(AMOTD);
+  FServerMessages := AMOTD;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
 procedure TIRC.OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
 begin
-  FLog.Add(AMessage);
+  FServerMessage := AMessage;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
@@ -189,7 +216,9 @@ end;
 
 procedure TIRC.OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
 begin
-  FOnNickListReceived(AChannel, ANicknameList);
+  FChannel := AChannel;
+  FNickNameList := ANicknameList;
+  TIdSync.SynchronizeMethod(@SendNickNameListReceived);
 end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
@@ -201,14 +230,22 @@ begin
     Exit;
   end;
 
-  FOnUserJoined(AChannel, ANickname);
-  FLog.Add(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  FChannel := AChannel;
+  FNickName := ANickname;
+  TIdSync.SynchronizeMethod(@SendUserJoined);
+
+  FServerMessage := StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
+
   MessageReceived(AChannel, StrJoined + ANickname);
 end;
 
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
 begin
-  FOnUserLeft(AChannel, ANickname);
+  FChannel := AChannel;
+  FNickName := ANickname;
+  TIdSync.SynchronizeMethod(@SendParted);
+  SendParted;
 
   if ANickname = UserName then
      Exit;
@@ -221,6 +258,13 @@ begin
   FLog.Add(AMsg);
 end;
 
+function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
+begin
+  Result := Channel;
+  if FIdIRC.IsOp(Channel) or FIdIRC.IsVoice(Channel) then
+    Result := Copy(Channel, 2, MaxInt);
+end;
+
 procedure TIRC.SendMessage;
 begin
   FOnMessageReceived(FChannel, FMessage);
@@ -229,6 +273,33 @@ end;
 procedure TIRC.SendChannelJoined;
 begin
   FOnChannelJoined(FChannel);
+end;
+
+procedure TIRC.SendNickNameListReceived;
+begin
+  FOnNickListReceived(FChannel, FNicknameList)
+end;
+
+procedure TIRC.SendParted;
+begin
+  FOnUserLeft(FChannel, FNickname);
+end;
+
+procedure TIRC.SendServerMessage;
+begin
+  if FServerMessages <> nil then
+    FLog.AddStrings(FServerMessages);
+
+  if FServerMessage <> '' then
+    FLog.Add(FServerMessage);
+
+  FServerMessages := nil;
+  FServerMessage := '';
+end;
+
+procedure TIRC.SendUserJoined;
+begin
+  FOnUserJoined(FChannel, FNickname);
 end;
 
 procedure TIRC.Connect;
@@ -253,9 +324,19 @@ begin
 end;
 
 procedure TIRC.SendMessage(const Message: string);
+var
+  IsCommand: Boolean;
+  RawString: string;
 begin
-  if FActiveChannel = '' then
-     FIdIRC.Raw(Message)
+  IsCommand := IsInputCommand(Message);
+  if (FActiveChannel = '') or IsCommand then
+  begin
+    RawString := Message;
+    if IsCommand then
+       RawString := FCommands.GetRawCommand(RawString);
+
+    FIdIRC.Raw(RawString)
+  end
   else
     MessageToChannel(Message);
 end;
@@ -264,12 +345,14 @@ constructor TIRC.Create;
 begin
   inherited;
   ConfigureIdIRC;
+  FCommands := TIRCCommand.Create;
 end;
 
 destructor TIRC.Destroy;
 begin
   FIdIRC.Free;
   FAutoJoinChannels.Free;
+  FCommands.Free;
   inherited;
 end;
 
