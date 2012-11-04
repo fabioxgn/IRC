@@ -35,6 +35,7 @@ type
       FOnMessageReceived: TOnMessageReceived;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
+      procedure ConfigureEncoding;
       procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetUserName: string;
@@ -116,6 +117,7 @@ end;
 procedure TIRC.ConfigureIdIRC;
 begin
   FIdIRC := TIdIRC.Create(nil);
+
   FIdIRC.OnStatus:= @OnStatus;
   FIdIRC.OnNotice:= @OnNotice;
   FIdIRC.OnMOTD:= @OnMOTD;
@@ -125,6 +127,11 @@ begin
   FIdIRC.OnPart:= @OnLeave;
   FIdIRC.OnServerWelcome := @OnWelcome;
   FIdIRC.OnRaw := @OnRaw;
+end;
+
+procedure TIRC.ConfigureEncoding;
+begin
+ FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
 end;
 
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
@@ -308,6 +315,7 @@ procedure TIRC.Connect;
 begin
   ReadConfig;
   FIdIRC.Connect;
+  ConfigureEncoding;
 end;
 
 procedure TIRC.Disconnect;
