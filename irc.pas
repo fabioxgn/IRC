@@ -124,6 +124,7 @@ begin
   FIdIRC.OnJoin := @OnJoin;
   FIdIRC.OnPart:= @OnLeave;
   FIdIRC.OnServerWelcome := @OnWelcome;
+  FIdIRC.OnRaw := @OnRaw;
 end;
 
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
@@ -185,8 +186,8 @@ end;
 
 procedure TIRC.OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
 begin
-  //TODO: Mostrar de quem é e para quem é
-  FLog.Add(ANotice);
+  FServerMessage :=  Format('* Notice from %s to %s: %s ', [ANicknameFrom, ANicknameTo, ANotice]);
+  SendServerMessage;
 end;
 
 procedure TIRC.OnMOTD(ASender: TIdContext; AMOTD: TStrings);
@@ -255,7 +256,8 @@ end;
 
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
 begin
-  FLog.Add(AMsg);
+  FServerMessage := AMsg;
+  SendServerMessage;
 end;
 
 function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
