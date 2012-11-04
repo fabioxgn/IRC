@@ -43,8 +43,14 @@ begin
 end;
 
 function TIRCCommand.GetCommandFromInput(const RawInput: string): string;
+var
+  CommandEnd: Integer;
 begin
-  Result := Copy(RawInput, 1, Pos(' ', RawInput) -1)
+  CommandEnd := Pos(' ', RawInput);
+  if CommandEnd = 0 then
+    CommandEnd := MaxInt;
+
+  Result := Copy(RawInput, 1, CommandEnd -1)
 end;
 
 function TIRCCommand.RemoveSlash(const Value: string): string;

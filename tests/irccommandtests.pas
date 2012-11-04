@@ -20,6 +20,7 @@ type
   published
     procedure ConvertToRaw;
     procedure JoinAliasJ;
+    procedure RawCommand;
   end;
 
 implementation
@@ -34,6 +35,12 @@ end;
 procedure TIRCCommandsTests.JoinAliasJ;
 begin
   CheckEquals('JOIN #ubuntu', FSUT.GetRawCommand('/j #ubuntu'));
+end;
+
+procedure TIRCCommandsTests.RawCommand;
+begin
+  CheckEquals('AWAY', FSUT.GetRawCommand('/away'));
+  CheckEquals('AWAY brb', FSUT.GetRawCommand('/away brb'));
 end;
 
 procedure TIRCCommandsTests.SetUp;
