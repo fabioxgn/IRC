@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, IRC;
+  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC;
 
 const
      LM_AFTER_SHOW = LM_USER + 300;
@@ -21,16 +21,15 @@ type
     ActionCloseChat: TAction;
     ActionJoinChannel: TAction;
     ActionConfig: TAction;
-    ActionLeaveChannel: TAction;
     ActionConnect: TAction;
     ActionDisconnect: TAction;
     ActionList: TActionList;
+    EditFilter: TEdit;
     EditMensagem: TEdit;
     MainMenu: TMainMenu;
     MemoServidor: TMemo;
     MenuConectar: TMenuItem;
     MenuDesconectar: TMenuItem;
-    MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
@@ -39,6 +38,8 @@ type
     MenuItemConfig: TMenuItem;
     MenuServidor: TMenuItem;
     PageControl: TPageControl;
+    PanelRoot: TPanel;
+    PanelLeft: TPanel;
     PanelRight: TPanel;
     PopupMenuPageControl: TPopupMenu;
     PopupMenuTreeView: TPopupMenu;
@@ -47,11 +48,12 @@ type
     procedure ActionChatExecute(Sender: TObject);
     procedure ActionCloseChatExecute(Sender: TObject);
     procedure ActionCloseTabExecute(Sender: TObject);
-    procedure ActionLeaveChannelExecute(Sender: TObject);
     procedure ActionConnectExecute(Sender: TObject);
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
+    procedure EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -71,6 +73,8 @@ type
     function FindChannelNode(const Channel: string): TTreeNode;
     function GetChannelTab(const Channel: string): TTabSheet;
     function IsActiveTabChannel: Boolean;
+    function IsChatTabOpen(const Nome: string): Boolean;
+    function IsSelectedNodeUser: Boolean;
     procedure MostrarConfig;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
@@ -95,7 +99,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, sysutils;
+uses FileUtil, ConfigForm, config, sysutils, strutils;
 
 {$R *.lfm}
 
@@ -121,6 +125,50 @@ begin
   FIRC.JoinChannel(Channel);
 end;
 
+procedure TMainForm.EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (Key = VK_RETURN) and IsSelectedNodeUser then
+    ActionChat.Execute;
+end;
+
+procedure TMainForm.EditFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+
+  procedure FilterNodes;
+   var
+     N: TTreeNode;
+     I: Integer;
+     Filtro: string;
+     FirstSelected: Boolean;
+   begin
+     Filtro := Trim(EditFilter.Text);
+     FirstSelected := False;
+ 	   for N in TreeViewUsers.Items do
+   	 begin
+       for I := 0 to N.Count -1 do
+       begin
+         N.Items[I].Visible := (Filtro = '') or AnsiStartsText(EditFilter.Text, N.Items[I].Text);
+         if not FirstSelected then
+         begin
+           N.Items[I].Selected := True;
+           FirstSelected := True;
+         end;
+       end;
+ end;
+   end;
+
+ begin
+   if Key = VK_RETURN then
+     Exit;
+
+   TreeViewUsers.BeginUpdate;
+   try
+     FilterNodes;
+     TreeViewUsers.FullExpand();
+   finally
+     TreeViewUsers.EndUpdate;
+   end;
+end;
+
 procedure TMainForm.ActionConnectExecute(Sender: TObject);
 begin
   FIRC.Connect;
@@ -129,11 +177,6 @@ end;
 procedure TMainForm.ActionConfigExecute(Sender: TObject);
 begin
   MostrarConfig;
-end;
-
-procedure TMainForm.ActionLeaveChannelExecute(Sender: TObject);
-begin
-  FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
 end;
 
 procedure TMainForm.ActionCloseChatExecute(Sender: TObject);
@@ -226,6 +269,7 @@ begin
   Memo.Cursor := crArrow;
   Memo.Font.Size := DefaultFontSize;
   Memo.TabStop := False;
+  Memo.BorderStyle := bsSingle;
 end;
 
 function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
@@ -248,6 +292,16 @@ end;
 function TMainForm.IsActiveTabChannel: Boolean;
 begin
  Result := TreeViewUsers.Items.FindTopLvlNode(PageControl.ActivePage.Caption) <> nil;
+end;
+
+function TMainForm.IsChatTabOpen(const Nome: string): Boolean;
+begin
+  Result := GetTabByName(RemoveOPVoicePrefix(Nome)) <> nil;
+end;
+
+function TMainForm.IsSelectedNodeUser: Boolean;
+begin
+ Result := (TreeViewUsers.Selected <> nil) and (TreeViewUsers.Selected.Parent = nil);
 end;
 
 procedure TMainForm.AddChannelToTree(const Channel: string);
@@ -287,29 +341,12 @@ end;
 
 procedure TMainForm.PopupMenuTreeViewPopup(Sender: TObject);
 var
-  IsChannel: Boolean;
+  IsChatOpen: Boolean;
 begin
-  if TreeViewUsers.Selected = nil then
-  begin
-   ActionLeaveChannel.Visible := False;
-   ActionCloseChat.Visible := False;
-   ActionChat.Visible := False;
-   Exit;
-  end;
+  IsChatOpen := IsSelectedNodeUser and IsChatTabOpen(TreeViewUsers.Selected.Text);
 
-  IsChannel := TreeViewUsers.Selected.Parent = nil;
-  ActionLeaveChannel.Visible :=  IsChannel;
-
-  if IsChannel then
-  begin
-    ActionCloseChat.Visible := False;
-    ActionChat.Visible := False;
-  end
-  else
-  begin
-    ActionCloseChat.Visible := GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)) <> nil;
-    ActionChat.Visible := not ActionCloseChat.Visible;
-  end;
+  ActionChat.Visible := not IsChatOpen;
+  ActionCloseChat.Visible := IsChatOpen;
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
