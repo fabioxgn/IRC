@@ -16,13 +16,14 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+   ActionCloseTab: TAction;
     ActionChat: TAction;
     ActionCloseChat: TAction;
     ActionJoinChannel: TAction;
     ActionConfig: TAction;
     ActionLeaveChannel: TAction;
-    ActionConectar: TAction;
-    ActionDesconectar: TAction;
+    ActionConnect: TAction;
+    ActionDisconnect: TAction;
     ActionList: TActionList;
     EditMensagem: TEdit;
     MainMenu: TMainMenu;
@@ -32,26 +33,32 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
+    MenuItem4: TMenuItem;
+    MenuItemFecharAba: TMenuItem;
     MenuItemChannel: TMenuItem;
     MenuItemConfig: TMenuItem;
     MenuServidor: TMenuItem;
     PageControl: TPageControl;
     PanelRight: TPanel;
+    PopupMenuPageControl: TPopupMenu;
     PopupMenuTreeView: TPopupMenu;
     TabServer: TTabSheet;
     TreeViewUsers: TTreeView;
     procedure ActionChatExecute(Sender: TObject);
     procedure ActionCloseChatExecute(Sender: TObject);
+    procedure ActionCloseTabExecute(Sender: TObject);
     procedure ActionLeaveChannelExecute(Sender: TObject);
-    procedure ActionConectarExecute(Sender: TObject);
+    procedure ActionConnectExecute(Sender: TObject);
     procedure ActionConfigExecute(Sender: TObject);
-    procedure ActionDesconectarExecute(Sender: TObject);
+    procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
+    procedure PageControlMouseDown(Sender: TObject; Button: TMouseButton;
+     Shift: TShiftState; X, Y: Integer);
     procedure PopupMenuTreeViewPopup(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
@@ -63,6 +70,7 @@ type
     procedure ConfigureMemo(var Memo: TMemo);
     function FindChannelNode(const Channel: string): TTreeNode;
     function GetChannelTab(const Channel: string): TTabSheet;
+    function IsActiveTabChannel: Boolean;
     procedure MostrarConfig;
     procedure OnNickListReceived(const Channel: string; List: TStrings);
     procedure OnUserJoined(const Channel, User: string);
@@ -96,7 +104,7 @@ uses FileUtil, ConfigForm, config, sysutils;
 const
   DefaultFontSize = 11;
 
-procedure TMainForm.ActionDesconectarExecute(Sender: TObject);
+procedure TMainForm.ActionDisconnectExecute(Sender: TObject);
 begin
   FIRC.Disconnect;
 end;
@@ -113,7 +121,7 @@ begin
   FIRC.JoinChannel(Channel);
 end;
 
-procedure TMainForm.ActionConectarExecute(Sender: TObject);
+procedure TMainForm.ActionConnectExecute(Sender: TObject);
 begin
   FIRC.Connect;
 end;
@@ -131,6 +139,17 @@ end;
 procedure TMainForm.ActionCloseChatExecute(Sender: TObject);
 begin
   GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)).Free;
+end;
+
+procedure TMainForm.ActionCloseTabExecute(Sender: TObject);
+begin
+  if PageControl.ActivePage = nil then
+     Exit;
+
+  if IsActiveTabChannel then
+    FIRC.LeaveChannel(PageControl.ActivePage.Caption)
+  else
+    GetTabByName(PageControl.ActivePage.Caption).Free;
 end;
 
 procedure TMainForm.ActionChatExecute(Sender: TObject);
@@ -226,6 +245,11 @@ begin
     Result := NewChannelTab(ChannelName);
 end;
 
+function TMainForm.IsActiveTabChannel: Boolean;
+begin
+ Result := TreeViewUsers.Items.FindTopLvlNode(PageControl.ActivePage.Caption) <> nil;
+end;
+
 procedure TMainForm.AddChannelToTree(const Channel: string);
 begin
   if FindChannelNode(Channel) <> nil then
@@ -247,6 +271,18 @@ begin
     FIRC.ActiveChannel := ''
   else
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
+end;
+
+procedure TMainForm.PageControlMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+  TabIndex: Integer;
+begin
+  if Button <> mbRight then
+    Exit;
+
+  TabIndex := PageControl.IndexOfTabAt(X, Y);
+  if TabIndex >= 0 then
+     PageControl.ActivePage := PageControl.Pages[TabIndex];
 end;
 
 procedure TMainForm.PopupMenuTreeViewPopup(Sender: TObject);
