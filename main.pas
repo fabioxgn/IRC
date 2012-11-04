@@ -52,8 +52,10 @@ type
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
-    procedure EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure EditFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditFilterKeyDown(Sender: TObject; var Key: Word;
+     Shift: TShiftState);
+    procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
+     Shift: TShiftState);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
