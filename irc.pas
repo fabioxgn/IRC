@@ -38,6 +38,7 @@ type
       procedure ConfigureEncoding;
       procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
+      function GetConnected: Boolean;
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
       function IsInputCommand(const Message: string): Boolean;
@@ -70,6 +71,7 @@ type
       property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property UserName: string read GetUserName;
+      property Connected: Boolean read GetConnected;
       procedure AutoJoinChannels;
       procedure Connect;
       procedure Disconnect;
@@ -137,6 +139,11 @@ end;
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
 begin
   Result := Format(MessageFormat, [NickName, Message]);
+end;
+
+function TIRC.GetConnected: Boolean;
+begin
+  Result := FIdIRC.Connected;
 end;
 
 function TIRC.GetUserName: string;
