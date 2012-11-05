@@ -44,6 +44,7 @@ type
     PopupMenuPageControl: TPopupMenu;
     PopupMenuTreeView: TPopupMenu;
     TabServer: TTabSheet;
+    TrayIcon: TTrayIcon;
     TreeViewUsers: TTreeView;
     procedure ActionChatExecute(Sender: TObject);
     procedure ActionCloseChatExecute(Sender: TObject);
@@ -64,6 +65,7 @@ type
     procedure PageControlMouseDown(Sender: TObject; Button: TMouseButton;
      Shift: TShiftState; X, Y: Integer);
     procedure PopupMenuTreeViewPopup(Sender: TObject);
+    procedure TrayIconDblClick(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
@@ -224,6 +226,13 @@ end;
 procedure TMainForm.FormWindowStateChange(Sender: TObject);
 begin
   AutoScroll := WindowState <> wsMinimized;
+
+  if WindowState = wsMinimized then
+  begin
+    Hide;
+    WindowState := wsNormal;
+    ShowInTaskBar := stNever;
+  end;
 end;
 
 procedure TMainForm.OnMessageReceived(const Channel, Message: string);
@@ -351,6 +360,17 @@ begin
   ActionCloseChat.Visible := IsChatOpen;
 end;
 
+procedure TMainForm.TrayIconDblClick(Sender: TObject);
+begin
+  if not Visible then
+  begin
+    Show;
+    Application.Restore;
+  end
+  else
+    Application.Minimize;
+end;
+
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
 begin
   SelectChannelTab;
@@ -434,6 +454,9 @@ end;
 
 procedure TMainForm.AfterShow;
 begin
+  if FIRC.Connected then
+    Exit;
+
   if not FileExistsUTF8(DefaultConfigFile) then
     MostrarConfig;
 
