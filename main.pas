@@ -60,6 +60,7 @@ type
      Shift: TShiftState);
     procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
      Shift: TShiftState);
+    procedure EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
@@ -110,7 +111,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, sysutils, strutils;
+uses FileUtil, ConfigForm, config, StringUtils, sysutils, strutils;
 
 {$R *.lfm}
 
@@ -178,6 +179,27 @@ procedure TMainForm.EditFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShif
    finally
      TreeViewUsers.EndUpdate;
    end;
+end;
+
+procedure TMainForm.EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+var
+  Word, Nick: string;
+  CarretPos: TPoint;
+begin
+  if key <> VK_TAB then
+   Exit;
+
+  Word := TStringUtils.GetWordAtCursor(EditMensagem.Text, EditMensagem.CaretPos.x);
+  Nick := FChannelList.AutoComplete(FIRC.ActiveChannel, Word);
+  if Nick <> '' then
+  begin
+    EditMensagem.Text := StringReplace(EditMensagem.Text, Word, Nick, []);
+    CarretPos.x := Pos(Nick, EditMensagem.Text) + Length(Nick);
+    CarretPos.y := EditMensagem.CaretPos.y;
+    EditMensagem.CaretPos := CarretPos;
+  end;
+
+  Key := VK_UNDEFINED;
 end;
 
 procedure TMainForm.ActionConnectExecute(Sender: TObject);

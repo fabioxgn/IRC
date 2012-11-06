@@ -63,6 +63,7 @@ object MainForm: TMainForm
       Top = 610
       Width = 842
       Align = alBottom
+      OnKeyDown = EditMensagemKeyDown
       OnKeyUp = EditMensagemKeyUp
       TabOrder = 1
     end
