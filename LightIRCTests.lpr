@@ -3,7 +3,8 @@ program LightIRCTests;
 {$mode objfpc}{$H+}
 
 uses
-  Interfaces, Forms, GuiTestRunner, IRCCommandTests, IRCCommands;
+  Interfaces, Forms, GuiTestRunner, IRCCommandTests, IRCCommands,
+  ChannelListTests, ChannelList;
 
 {$R *.res}
 

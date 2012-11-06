@@ -41,7 +41,7 @@
         <PackageName Value="FCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="3">
+    <Units Count="6">
       <Unit0>
         <Filename Value="LightIRCTests.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -57,6 +57,21 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCCommands"/>
       </Unit2>
+      <Unit3>
+        <Filename Value="tests\channellisttests.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ChannelListTests"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="tests\channellisttests.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="channellisttests"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="channellist.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="ChannelList"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -67,6 +82,9 @@
       <OtherUnitFiles Value="tests"/>
     </SearchPaths>
     <Linking>
+      <Debugging>
+        <UseHeaptrc Value="True"/>
+      </Debugging>
       <Options>
         <Win32>
           <GraphicApplication Value="True"/>
