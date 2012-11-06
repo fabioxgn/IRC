@@ -172,8 +172,12 @@ object MainForm: TMainForm
       OnExecute = ActionChatExecute
     end
     object ActionCloseTab: TAction
-      Caption = 'Fechar'
+      Caption = 'Close'
       OnExecute = ActionCloseTabExecute
+    end
+    object ActionCloseChannel: TAction
+      Caption = 'Close'
+      OnExecute = ActionCloseChannelExecute
     end
   end
   object PopupMenuTreeView: TPopupMenu
@@ -185,6 +189,9 @@ object MainForm: TMainForm
     end
     object MenuItem3: TMenuItem
       Action = ActionChat
+    end
+    object MenuItem1: TMenuItem
+      Action = ActionCloseChannel
     end
   end
   object PopupMenuPageControl: TPopupMenu

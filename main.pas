@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC;
+  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList;
 
 const
      LM_AFTER_SHOW = LM_USER + 300;
@@ -16,6 +16,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+   ActionCloseChannel: TAction;
    ActionCloseTab: TAction;
     ActionChat: TAction;
     ActionCloseChat: TAction;
@@ -30,6 +31,7 @@ type
     MemoServidor: TMemo;
     MenuConectar: TMenuItem;
     MenuDesconectar: TMenuItem;
+    MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
     MenuItem4: TMenuItem;
@@ -47,6 +49,7 @@ type
     TrayIcon: TTrayIcon;
     TreeViewUsers: TTreeView;
     procedure ActionChatExecute(Sender: TObject);
+    procedure ActionCloseChannelExecute(Sender: TObject);
     procedure ActionCloseChatExecute(Sender: TObject);
     procedure ActionCloseTabExecute(Sender: TObject);
     procedure ActionConnectExecute(Sender: TObject);
@@ -70,21 +73,25 @@ type
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
     FIRC: TIRC;
-    procedure AddChannelToTree(const Channel: string);
-    procedure CloseChannel(const Channel: string);
-    procedure CloseChannelTab(const Channel: string);
+    FChannelList: TChannelList;
+    procedure AddChannelToTree(Channel: TChannel);
+    procedure AddNicksToChannel(const Channel: TChannel; const List: TStrings);
+    procedure AddNicksToTreeView(const Channel: TChannel);
+    procedure AddUserToTreeView(const User: TUser; const Channel: TChannel);
+    procedure CloseChannel(const ChannelName: string);
     procedure ConfigureMemo(var Memo: TMemo);
     function FindChannelNode(const Channel: string): TTreeNode;
     function GetChannelTab(const Channel: string): TTabSheet;
     function IsActiveTabChannel: Boolean;
     function IsChatTabOpen(const Nome: string): Boolean;
     function IsSelectedNodeUser: Boolean;
+    function IsSelectedNodeChannel: Boolean;
     procedure MostrarConfig;
-    procedure OnNickListReceived(const Channel: string; List: TStrings);
-    procedure OnUserJoined(const Channel, User: string);
+    procedure OnNickListReceived(const ChannelName: string; List: TStrings);
+    procedure OnUserJoined(const ChannelName, Nick: string);
     procedure OnUserParted(const Channel, User: string);
     procedure OnMessageReceived(const Channel, Message: string);
-    procedure OnChannelJoined(const Channel: string);
+    procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
     function RemoveOPVoicePrefix(const Username: string): string;
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
@@ -204,6 +211,11 @@ begin
   SelectChannelTab;
 end;
 
+procedure TMainForm.ActionCloseChannelExecute(Sender: TObject);
+begin
+  FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
+end;
+
 procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
 begin
   if Key <> VK_RETURN then
@@ -249,9 +261,18 @@ begin
   Memo.Lines.Add(Message);
 end;
 
-procedure TMainForm.OnChannelJoined(const Channel: string);
+procedure TMainForm.OnChannelJoined(const ChannelName: string);
+var
+  Channel: TChannel;
+  Tab: TTabSheet;
 begin
-  PageControl.ActivePage := GetChannelTab(Channel);
+  Channel := TChannel.Create(ChannelName);
+  FChannelList.Add(Channel);
+
+  Tab := GetChannelTab(Channel.Name);
+  Channel.Tab := Tab;
+  PageControl.ActivePage := Tab;
+
   AddChannelToTree(Channel);
 end;
 
@@ -267,11 +288,6 @@ begin
   end;
 end;
 
-procedure TMainForm.CloseChannelTab(const Channel: string);
-begin
-  GetTabByName(Channel).Free;
-end;
-
 procedure TMainForm.ConfigureMemo(var Memo: TMemo);
 begin
   Memo.Align := alClient;
@@ -285,9 +301,7 @@ end;
 
 function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
 begin
-  Result := TreeViewUsers.Items.GetFirstNode;
-  while Assigned(Result) and (UpperCase(Result.Text) <> UpperCase(Channel)) do
-    Result := Result.GetNextSibling;
+  Result := FChannelList.ChannelByName(Channel).Node as TTreeNode;
 end;
 
 function TMainForm.GetChannelTab(const Channel: string): TTabSheet;
@@ -312,22 +326,62 @@ end;
 
 function TMainForm.IsSelectedNodeUser: Boolean;
 begin
- Result := (TreeViewUsers.Selected <> nil) and (TreeViewUsers.Selected.Parent = nil);
+ Result := (TreeViewUsers.Selected <> nil) and (TreeViewUsers.Selected.Parent <> nil);
 end;
 
-procedure TMainForm.AddChannelToTree(const Channel: string);
+function TMainForm.IsSelectedNodeChannel: Boolean;
 begin
-  if FindChannelNode(Channel) <> nil then
-    Exit;
+  Result := (TreeViewUsers.Selected <> nil) and (TreeViewUsers.Selected.Parent = nil);
+end;
 
-  TreeViewUsers.Items.Add(nil, Channel);
+procedure TMainForm.AddChannelToTree(Channel: TChannel);
+begin
+  Channel.Node := TreeViewUsers.Items.Add(nil, Channel.Name);
   TreeViewUsers.AlphaSort;
 end;
 
-procedure TMainForm.CloseChannel(const Channel: string);
+procedure TMainForm.AddNicksToChannel(const Channel: TChannel; const List: TStrings);
+var
+ Nick: string;
 begin
-  CloseChannelTab(Channel);
-  RemoveChannelFromList(Channel);
+  for Nick in List do
+    Channel.Users.Add(TUser.Create(Nick))
+end;
+
+procedure TMainForm.AddNicksToTreeView(const Channel: TChannel);
+var
+  User: TUser;
+begin
+	 TreeViewUsers.BeginUpdate;
+	 try
+	   Channel.Node := TreeViewUsers.Items.FindTopLvlNode(Channel.Name);
+	 for User in Channel.Users do
+	   User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
+	 TreeViewUsers.AlphaSort;
+	 finally
+	   TreeViewUsers.EndUpdate;
+	 end;
+end;
+
+procedure TMainForm.AddUserToTreeView(const User: TUser; const Channel: TChannel);
+begin
+ TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
+ TreeViewUsers.AlphaSort;
+end;
+
+procedure TMainForm.CloseChannel(const ChannelName: string);
+var
+  Channel: TChannel;
+begin
+  Channel := FChannelList.ChannelByName(ChannelName);
+
+  //TODO: exception em vez de retornar nil
+  if Channel = nil then
+    Exit;
+
+  Channel.Node.Free;
+  Channel.Tab.Free;
+  FChannelList.Extract(Channel).Free;
 end;
 
 procedure TMainForm.PageControlChange(Sender: TObject);
@@ -354,10 +408,11 @@ procedure TMainForm.PopupMenuTreeViewPopup(Sender: TObject);
 var
   IsChatOpen: Boolean;
 begin
-  IsChatOpen := IsSelectedNodeUser and IsChatTabOpen(TreeViewUsers.Selected.Text);
+  IsChatOpen := IsChatTabOpen(TreeViewUsers.Selected.Text);
 
-  ActionChat.Visible := not IsChatOpen;
-  ActionCloseChat.Visible := IsChatOpen;
+  ActionCloseChannel.Visible := IsSelectedNodeChannel;
+  ActionChat.Visible := IsSelectedNodeUser and (not IsChatOpen);
+  ActionCloseChat.Visible := IsSelectedNodeUser and IsChatOpen;
 end;
 
 procedure TMainForm.TrayIconDblClick(Sender: TObject);
@@ -394,7 +449,7 @@ end;
 
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
-  TreeViewUsers.Items.FindTopLvlNode(Channel).Free;
+  FChannelList.ChannelByName(Channel).Node.Free;
 end;
 
 function TMainForm.RemoveOPVoicePrefix(const Username: string): string;
@@ -406,11 +461,8 @@ begin
 end;
 
 procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
-var
-  ChannelNode: TTreeNode;
 begin
-  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
-  ChannelNode.FindNode(User).Free;
+  FChannelList.ChannelByName(Channel).Users.UserByNick(User).Node.Free;
 end;
 
 function TMainForm.GetTabByName(const Channel: string): TTabSheet;
@@ -465,29 +517,25 @@ begin
   FIRC.AutoJoinChannels;
 end;
 
-procedure TMainForm.OnNickListReceived(const Channel: string; List: TStrings);
+procedure TMainForm.OnNickListReceived(const ChannelName: string; List: TStrings);
 var
-  ChannelNode: TTreeNode;
-  User: string;
+  Channel: TChannel;
 begin
-  TreeViewUsers.BeginUpdate;
-  try
-	  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
-	  for User in List do
-	    TreeViewUsers.Items.AddChild(ChannelNode, User);
-	  TreeViewUsers.AlphaSort;
-  finally
-    TreeViewUsers.EndUpdate;
-  end;
+  Channel := FChannelList.ChannelByName(ChannelName);
+  AddNicksToChannel(Channel, List);
+  AddNicksToTreeView(Channel);
 end;
 
-procedure TMainForm.OnUserJoined(const Channel, User: string);
+procedure TMainForm.OnUserJoined(const ChannelName, Nick: string);
 var
-  ChannelNode: TTreeNode;
+  Channel: TChannel;
+  User: TUser;
 begin
-  ChannelNode := TreeViewUsers.Items.FindTopLvlNode(Channel);
-  TreeViewUsers.Items.AddChild(ChannelNode, User);
-  TreeViewUsers.AlphaSort;
+  Channel := FChannelList.ChannelByName(ChannelName);
+
+  User := TUser.Create(Nick);
+  Channel.Users.Add(User);
+  AddUserToTreeView(User, Channel);
 end;
 
 procedure TMainForm.OnUserParted(const Channel, User: string);
@@ -501,6 +549,9 @@ end;
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
+
+  FChannelList := TChannelList.Create;
+
   FIRC := TIRC.Create;
   FIRC.OnMessageReceived := @OnMessageReceived;
   FIRC.OnNickListReceived := @OnNickListReceived;
@@ -514,6 +565,7 @@ end;
 destructor TMainForm.Destroy;
 begin
   FIRC.Free;
+  FChannelList.Free;
   inherited Destroy;
 end;
 
