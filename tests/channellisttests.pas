@@ -31,10 +31,10 @@ implementation
 const
   StrChannel1 = '#channel1';
   StrChannel2 = '#channel2';
-  StrUser1Channel1 = 'User1C1';
-  StrUser2Channel1 = 'User2C1';
-  StrUser1Channel2 = 'User1C2';
-  StrUser2Channel2 = 'User2C2';
+  StrUser1Channel1 = '@User1C1';
+  StrUser2Channel1 = '+User2C1';
+  StrUser1Channel2 = '@User1C2';
+  StrUser2Channel2 = '+User2C2';
 
 
 procedure TChannelListTests.Add2ChannelsWith2UsersEach;

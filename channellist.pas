@@ -12,10 +12,15 @@ type
   { TUser }
 
   TUser = class
-    Nick: string;
-    DisplayNick: string;
+  private
+    FNick: string;
+    FDisplayNick: string;
+    procedure SetNick(AValue: string);
+  public
     Tab: TObject;
     Node: TObject;
+    property Nick: string read FNick write SetNick;
+    property DisplayNick: string read FDisplayNick;
     constructor Create(const NickName: string);
   end;
 
@@ -59,10 +64,20 @@ begin
   Result := nil;
 end;
 
+procedure TUser.SetNick(AValue: string);
+begin
+ if FNick = AValue then
+   Exit;
+
+ FNick := AValue;
+
+ FDisplayNick :=  StringReplace(AValue, '@', '', []);
+ FDisplayNick :=  StringReplace(FDisplayNick, '+', '', []);
+end;
+
 constructor TUser.Create(const NickName: string);
 begin
-  Nick := NickName; //TODO: Remover @ e +
-  DisplayNick := NickName;
+  Nick := NickName;
 end;
 
 { TUserList }
@@ -90,7 +105,7 @@ begin
   for Channel in Self do
     if Channel.Name = ChannelName then
       for User in Channel.Users do
-          if AnsiStartsText(SearchString, User.Nick) then
+          if AnsiStartsText(SearchString, User.DisplayNick) then
              Exit(User.Nick)
 end;
 
