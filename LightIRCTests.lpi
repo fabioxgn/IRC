@@ -41,7 +41,7 @@
         <PackageName Value="FCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="LightIRCTests.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -60,18 +60,23 @@
       <Unit3>
         <Filename Value="tests\channellisttests.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="ChannelListTests"/>
+        <UnitName Value="channellisttests"/>
       </Unit3>
       <Unit4>
-        <Filename Value="tests\channellisttests.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="channellisttests"/>
-      </Unit4>
-      <Unit5>
         <Filename Value="channellist.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="ChannelList"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="stringutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StringUtils"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="tests\stringutilstests.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="StringUtilsTests"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
