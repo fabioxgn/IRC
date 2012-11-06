@@ -70,7 +70,7 @@ procedure TChannelListTests.AutoCompleteNickNames;
 begin
   Add2ChannelsWith2UsersEach;
 
-  CheckEquals(StrUser1Channel1, FSUT.AutoComplete(StrChannel1, 'User'));
+  CheckEquals('User1C1', FSUT.AutoComplete(StrChannel1, 'User'));
   CheckEquals('', FSUT.AutoComplete(StrChannel1, 'User1C2'));
   CheckEquals('', FSUT.AutoComplete(StrChannel1, 'User3'));
 end;

@@ -106,7 +106,7 @@ begin
     if Channel.Name = ChannelName then
       for User in Channel.Users do
           if AnsiStartsText(SearchString, User.DisplayNick) then
-             Exit(User.Nick)
+             Exit(User.DisplayNick)
 end;
 
 function TChannelList.ChannelByName(const Name: string): TChannel;

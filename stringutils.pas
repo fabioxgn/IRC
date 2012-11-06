@@ -21,7 +21,6 @@ implementation
 
 class function TStringUtils.GetWordAtCursor(const S: string; CursorPos: Integer): string;
 var
-  I: Integer;
   StartPos, EndPos: Integer;
 begin
   if (CursorPos = 0) or (CursorPos > Length(S)) then

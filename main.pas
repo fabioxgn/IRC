@@ -378,7 +378,7 @@ begin
 	 try
 	   Channel.Node := TreeViewUsers.Items.FindTopLvlNode(Channel.Name);
 	 for User in Channel.Users do
-	   User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
+	   User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.Nick);
 	 TreeViewUsers.AlphaSort;
 	 finally
 	   TreeViewUsers.EndUpdate;
