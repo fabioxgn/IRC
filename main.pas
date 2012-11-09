@@ -91,10 +91,12 @@ type
     procedure OnNickListReceived(const ChannelName: string; List: TStrings);
     procedure OnUserJoined(const ChannelName, Nick: string);
     procedure OnUserParted(const Channel, User: string);
+    procedure OnUserQuit(const NickName: string);
     procedure OnMessageReceived(const Channel, Message: string);
     procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
     function RemoveOPVoicePrefix(const Username: string): string;
+    procedure RemoveUserFromAllChannels(const NickName: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
@@ -387,7 +389,7 @@ end;
 
 procedure TMainForm.AddUserToTreeView(const User: TUser; const Channel: TChannel);
 begin
- TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
+ User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
  TreeViewUsers.AlphaSort;
 end;
 
@@ -482,6 +484,22 @@ begin
     Result := Username;
 end;
 
+procedure TMainForm.RemoveUserFromAllChannels(const NickName: string);
+var
+ User: TUser;
+ Channel: TChannel;
+begin
+ for Channel in FChannelList do
+ begin
+   User := Channel.Users.UserByNick(NickName);
+   if User <> nil then
+   begin
+     User.Node.Free;
+     Channel.Users.Extract(User).Free;
+   end;
+ end;
+end;
+
 procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
 begin
   FChannelList.ChannelByName(Channel).Users.UserByNick(User).Node.Free;
@@ -568,6 +586,16 @@ begin
     RemoveUserFromChannelList(User, Channel);
 end;
 
+procedure TMainForm.OnUserQuit(const NickName: string);
+begin
+  TreeViewUsers.BeginUpdate;
+  try
+    RemoveUserFromAllChannels(NickName);
+  finally
+    TreeViewUsers.EndUpdate;
+  end;
+end;
+
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -580,6 +608,7 @@ begin
   FIRC.OnUserJoined := @OnUserJoined;
   FIRC.OnUserParted := @OnUserParted;
   FIRC.OnChannelJoined := @OnChannelJoined;
+  FIRC.OnUserQuit := @OnUserQuit;
 
   ConfigureMemo(MemoServidor);
 end;

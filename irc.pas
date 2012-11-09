@@ -14,6 +14,7 @@ type
     TOnChannelJoined = procedure(const Channel: string) of object;
     TOnNickListReceived = procedure(const Channel: string; List: TStrings) of object;
     TOnUserEvent = procedure(const Channel, User: string) of object;
+    TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string) of object;
 
     TIRC = class
@@ -32,6 +33,7 @@ type
       FOnNickListReceived: TOnNickListReceived;
       FOnUserJoined: TOnUserEvent;
       FOnUserLeft: TOnUserEvent;
+      FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
@@ -53,12 +55,14 @@ type
       procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
       procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
       procedure OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
+      procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
       function RemoveOPVoicePrefix(const Channel: string): string;
       procedure SendMessage;
       procedure SendChannelJoined;
       procedure SendNickNameListReceived;
       procedure SendParted;
+      procedure SendQuit;
       procedure SendServerMessage;
       procedure SendUserJoined;
     public
@@ -69,6 +73,7 @@ type
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
       property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
+      property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property UserName: string read GetUserName;
       property Connected: Boolean read GetConnected;
@@ -89,6 +94,7 @@ uses config, IdSync, IdGlobal, sysutils;
 resourcestring
   StrJoined = '* Joined: ';
   StrParted = '* Parted: ';
+  StrQuit = '* %s %s';
 
 const
   NickNameFormat = '<%s>';
@@ -129,6 +135,7 @@ begin
   FIdIRC.OnPart:= @OnLeave;
   FIdIRC.OnServerWelcome := @OnWelcome;
   FIdIRC.OnRaw := @OnRaw;
+  FIdIRC.OnQuit := @OnQuit;
 end;
 
 procedure TIRC.ConfigureEncoding;
@@ -260,12 +267,18 @@ begin
   FChannel := AChannel;
   FNickName := ANickname;
   TIdSync.SynchronizeMethod(@SendParted);
-  SendParted;
 
   if ANickname = UserName then
      Exit;
 
   MessageReceived(AChannel, StrParted + ANickname + ' -' + APartMessage);
+end;
+
+procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
+begin
+  FNickName := ANickname;
+  FMessage := Format(StrQuit, [ANickname, AReason]);
+  TIdSync.SynchronizeMethod(@SendQuit);
 end;
 
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
@@ -299,6 +312,12 @@ end;
 procedure TIRC.SendParted;
 begin
   FOnUserLeft(FChannel, FNickname);
+end;
+
+procedure TIRC.SendQuit;
+begin
+  FLog.Add(FMessage);
+  FOnUserQuit(FNickName);
 end;
 
 procedure TIRC.SendServerMessage;
