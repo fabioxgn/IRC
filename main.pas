@@ -255,7 +255,7 @@ begin
   if Message = '' then
     Exit;
 
-  Memo := Tab.Components[0] as TMemo; //TODO: Melhorar essa gambi
+  Memo := Tab.Components[0] as TMemo;
   Memo.Lines.Add(Message);
 end;
 
