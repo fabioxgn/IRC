@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList;
+  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList, TreeviewHelper;
 
 const
      LM_AFTER_SHOW = LM_USER + 300;
@@ -111,7 +111,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, sysutils, strutils;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, sysutils;
 
 {$R *.lfm}
 
@@ -144,41 +144,17 @@ begin
 end;
 
 procedure TMainForm.EditFilterKeyUp(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+ if Key = VK_RETURN then
+   Exit;
 
-  procedure FilterNodes;
-   var
-     N: TTreeNode;
-     I: Integer;
-     Filtro: string;
-     FirstSelected: Boolean;
-   begin
-     Filtro := Trim(EditFilter.Text);
-     FirstSelected := False;
- 	   for N in TreeViewUsers.Items do
-   	 begin
-       for I := 0 to N.Count -1 do
-       begin
-         N.Items[I].Visible := (Filtro = '') or AnsiStartsText(EditFilter.Text, N.Items[I].Text);
-         if not FirstSelected then
-         begin
-           N.Items[I].Selected := True;
-           FirstSelected := True;
-         end;
-       end;
+ TreeViewUsers.BeginUpdate;
+ try
+   TreeViewUsers.FilterNodes(EditFilter.Text);
+   TreeViewUsers.FullExpand;
+ finally
+   TreeViewUsers.EndUpdate;
  end;
-   end;
-
- begin
-   if Key = VK_RETURN then
-     Exit;
-
-   TreeViewUsers.BeginUpdate;
-   try
-     FilterNodes;
-     TreeViewUsers.FullExpand();
-   finally
-     TreeViewUsers.EndUpdate;
-   end;
 end;
 
 procedure TMainForm.EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
