@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 440
+  Left = 73
   Height = 653
-  Top = 226
+  Top = 202
   Width = 1012
   HorzScrollBar.Page = 1012
   VertScrollBar.Page = 633
@@ -124,22 +124,22 @@ object MainForm: TMainForm
   object MainMenu: TMainMenu
     left = 440
     top = 160
-    object MenuServidor: TMenuItem
-      Caption = 'Servidor'
-      object MenuConectar: TMenuItem
+    object MenuItemServer: TMenuItem
+      Caption = 'Server'
+      object MenuItemConnect: TMenuItem
         Action = ActionConnect
       end
-      object MenuDesconectar: TMenuItem
+      object MenuItemDisconnect: TMenuItem
         Action = ActionDisconnect
       end
     end
-    object MenuItemChannel: TMenuItem
+    object MenuItemJoinChannel: TMenuItem
       Action = ActionJoinChannel
     end
     object MenuItemConfig: TMenuItem
       Action = ActionConfig
     end
-    object MenuItemFecharAba: TMenuItem
+    object MenuItemCloseActiveTab: TMenuItem
       Action = ActionCloseTab
       Caption = 'X'
       RightJustify = True
@@ -185,20 +185,20 @@ object MainForm: TMainForm
     OnPopup = PopupMenuTreeViewPopup
     left = 72
     top = 256
-    object MenuItem2: TMenuItem
+    object MenuItemCloseChat: TMenuItem
       Action = ActionCloseChat
     end
-    object MenuItem3: TMenuItem
+    object MenuItemChat: TMenuItem
       Action = ActionChat
     end
-    object MenuItem1: TMenuItem
+    object MenuItemCloseChannel: TMenuItem
       Action = ActionCloseChannel
     end
   end
   object PopupMenuPageControl: TPopupMenu
     left = 224
     top = 48
-    object MenuItem4: TMenuItem
+    object MenuItemCloseTab: TMenuItem
       Action = ActionCloseTab
     end
   end
