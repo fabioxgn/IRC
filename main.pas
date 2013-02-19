@@ -95,8 +95,6 @@ type
     procedure OnMessageReceived(const Channel, Message: string);
     procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
-    function RemoveOPVoicePrefix(const Username: string): string;
-    procedure RemoveUserFromAllChannels(const NickName: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
@@ -113,7 +111,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, sysutils, strutils;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, sysutils, strutils;
 
 {$R *.lfm}
 
@@ -216,7 +214,7 @@ end;
 
 procedure TMainForm.ActionCloseChatExecute(Sender: TObject);
 begin
-  GetTabByName(RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)).Free;
+  GetTabByName(TIRCUtils.RemoveOPVoicePrefix(TreeViewUsers.Selected.Text)).Free;
 end;
 
 procedure TMainForm.ActionCloseTabExecute(Sender: TObject);
@@ -332,7 +330,7 @@ function TMainForm.GetChannelTab(const Channel: string): TTabSheet;
 var
   ChannelName: string;
 begin
-  ChannelName := RemoveOPVoicePrefix(Channel);
+  ChannelName := TIRCUtils.RemoveOPVoicePrefix(Channel);
   Result := GetTabByName(ChannelName);
   if Result = nil then
     Result := NewChannelTab(ChannelName);
@@ -345,7 +343,7 @@ end;
 
 function TMainForm.IsChatTabOpen(const Nome: string): Boolean;
 begin
-  Result := GetTabByName(RemoveOPVoicePrefix(Nome)) <> nil;
+  Result := GetTabByName(TIRCUtils.RemoveOPVoicePrefix(Nome)) <> nil;
 end;
 
 function TMainForm.IsSelectedNodeUser: Boolean;
@@ -399,7 +397,6 @@ var
 begin
   Channel := FChannelList.ChannelByName(ChannelName);
 
-  //TODO: exception em vez de retornar nil
   if Channel = nil then
     Exit;
 
@@ -464,7 +461,7 @@ begin
   if Selected = nil then
      Exit;
 
-  Tab := GetTabByName(RemoveOPVoicePrefix(Selected.Text));
+  Tab := GetTabByName(TIRCUtils.RemoveOPVoicePrefix(Selected.Text));
   if Tab = nil then
     Exit;
 
@@ -474,30 +471,6 @@ end;
 procedure TMainForm.RemoveChannelFromList(const Channel: string);
 begin
   FChannelList.ChannelByName(Channel).Node.Free;
-end;
-
-function TMainForm.RemoveOPVoicePrefix(const Username: string): string;
-begin
-  if Username[1] in ['@', '+'] then
-    Result := Copy(Username, 2, MaxInt)
-  else
-    Result := Username;
-end;
-
-procedure TMainForm.RemoveUserFromAllChannels(const NickName: string);
-var
- User: TUser;
- Channel: TChannel;
-begin
- for Channel in FChannelList do
- begin
-   User := Channel.Users.UserByNick(NickName);
-   if User <> nil then
-   begin
-     User.Node.Free;
-     Channel.Users.Extract(User).Free;
-   end;
- end;
 end;
 
 procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
@@ -590,7 +563,7 @@ procedure TMainForm.OnUserQuit(const NickName: string);
 begin
   TreeViewUsers.BeginUpdate;
   try
-    RemoveUserFromAllChannels(NickName);
+     FChannelList.RemoveUserFromAllChannels(NickName);
   finally
     TreeViewUsers.EndUpdate;
   end;

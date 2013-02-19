@@ -4,7 +4,8 @@ program LightIRCTests;
 
 uses
   Interfaces, Forms, GuiTestRunner, IRCCommandTests, IRCCommands,
-  ChannelListTests, ChannelList, StringUtils, StringUtilsTests, UserTests;
+  ChannelListTests, ChannelList, StringUtils, StringUtilsTests, UserTests,
+  ircutilstests, IrcUtils;
 
 {$R *.res}
 

@@ -41,7 +41,7 @@
         <PackageName Value="FCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="8">
+    <Units Count="10">
       <Unit0>
         <Filename Value="LightIRCTests.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -82,6 +82,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="UserTests"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="tests\ircutilstests.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IrcUtilsTests"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="ircutils.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="IRCUtils"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

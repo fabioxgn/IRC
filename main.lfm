@@ -13,7 +13,7 @@ object MainForm: TMainForm
   OnClose = FormClose
   OnShow = FormShow
   OnWindowStateChange = FormWindowStateChange
-  LCLVersion = '1.0.2.0'
+  LCLVersion = '1.0.4.0'
   Visible = True
   object PanelRight: TPanel
     Left = 170

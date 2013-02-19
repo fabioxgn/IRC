@@ -46,6 +46,7 @@ type
   TChannelList = class(specialize TFPGObjectList<TChannel>)
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
+    procedure RemoveUserFromAllChannels(const NickName: string);
   end;
 
 
@@ -115,6 +116,22 @@ begin
     if AnsiCompareText(Result.Name, Name) = 0 then
       Exit;
   Result := nil;
+end;
+
+procedure TChannelList.RemoveUserFromAllChannels(const NickName: string);
+var
+ User: TUser;
+ Channel: TChannel;
+begin
+ for Channel in Self do
+ begin
+   User := Channel.Users.UserByNick(NickName);
+   if User <> nil then
+   begin
+     User.Node.Free;
+     Channel.Users.Extract(User).Free;
+   end;
+ end;
 end;
 
 end.
