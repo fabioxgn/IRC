@@ -24,8 +24,6 @@ Just read some of the code, guess you will get it ;D
 
 ## Indy 10
 
-This project uses Indy 10 for the IRC Protocol, you can get it at [The Indy Project][1] website.
+This project uses Indy 10 for the IRC Protocol.
 
-To compile this project, just put the Indy 10 in a folder called Indy10.
-
-[1]:http://www.indyproject.org/index.en.aspx 
+A stripped down and patched copy of Indy10 is included in the Indy10 folder.
