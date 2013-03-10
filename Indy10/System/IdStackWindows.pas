@@ -807,6 +807,17 @@ var
     {$ENDIF}
   {$ENDIF}
 begin
+  // TODO: Using gethostname() and gethostbyname/getaddrinfo() like this may
+  // not always return just the machine's IP addresses. Technically speaking,
+  // they will return the local hostname, and then return the address(es) to
+  // which that hostname resolves. It is possible for a machine to (a) be
+  // configured such that its name does not resolve to an IP, or (b) be
+  // configured such that its name resolves to multiple IPs, only one of which
+  // belongs to the local machine. For better results, we should use the Win32
+  // API GetAdaptersInfo() and/or GetAdaptersAddresses() functions instead.
+  // GetAdaptersInfo() only supports IPv4, but GetAdaptersAddresses() supports
+  // both IPv4 and IPv6...
+  
   LHostName := HostName;
 
   {$IFNDEF WINCE}
@@ -820,20 +831,24 @@ begin
     if AHost = nil then begin
       RaiseLastSocketError;
     end;
-    PAdrPtr := PAPInAddr(AHost^.h_address_list);
-    i := 0;
-    if PAdrPtr^[i] <> nil then begin
-      AAddresses.BeginUpdate;
-      try
-        repeat
-          // TODO: gethostbynaame() might return other things besides IPv4
-          // addresses, so we should be validating the address type before
-          // attempting the conversion...
-          AAddresses.Add(TranslateTInAddrToString(PAdrPtr^[I]^, Id_IPv4)); //BGO FIX
-          Inc(I);
-        until PAdrPtr^[i] = nil;
-      finally
-        AAddresses.EndUpdate;
+    // gethostbyname() might return other things besides IPv4 addresses, so we
+    // need to validate the address type before attempting the conversion...
+
+    // TODO: support IPv6 addresses
+    if AHost^.h_addrtype = AF_INET then
+    begin
+      PAdrPtr := PAPInAddr(AHost^.h_address_list);
+      i := 0;
+      if PAdrPtr^[i] <> nil then begin
+        AAddresses.BeginUpdate;
+        try
+          repeat
+            AAddresses.Add(TranslateTInAddrToString(PAdrPtr^[I]^, Id_IPv4)); //BGO FIX
+            Inc(I);
+          until PAdrPtr^[i] = nil;
+        finally
+          AAddresses.EndUpdate;
+        end;
       end;
     end;
     Exit;

@@ -60,7 +60,6 @@
 {$UNDEF HAS_TEncoding}
 {$UNDEF HAS_TCharacter}
 {$UNDEF HAS_TInterlocked}
-{$UNDEF TIdTextEncoding_IS_NATIVE}
 
 // Make sure that this is defined only for environments where we are using
 // the iconv library to charactor conversions.
@@ -595,6 +594,7 @@
       {$DEFINE HAS_REMOVEFREENOTIFICATION}
     {$ENDIF}
   {$ENDIF}
+  {$DEFINE HAS_GetObjectProp}
 {$ENDIF}
 
 {$IFDEF VCL_6_OR_ABOVE}
@@ -632,6 +632,7 @@
   {$IFNDEF FPC}
     {$DEFINE HAS_UInt64}
     {$DEFINE HAS_NAMED_THREADS}
+    {$DEFINE HAS_TStrings_ValueFromIndex}
   {$ENDIF}
   {$DEFINE HAS_TFormatSettings}
   {$IFNDEF VCL_70}
@@ -718,7 +719,6 @@
   {$DEFINE HAS_CLASSCONSTRUCTOR}
   {$DEFINE HAS_CLASSDESTRUCTOR}
   {$DEFINE HAS_DELAYLOAD}
-  {$DEFINE HAS_TStrings_ValueFromIndex}
   {$DEFINE HAS_TThread_NameThreadForDebugging}
   {$DEFINE DEPRECATED_TThread_SuspendResume}
   // Native(U)Int are finally ok to use now
@@ -1046,13 +1046,6 @@ word to an 8 bit byte and an 8 bit byte field named sa_len was added.
 
 {$IFDEF DOTNET}
   {$DEFINE DOTNET_OR_ICONV}
-  {$DEFINE TIdTextEncoding_IS_NATIVE}
-{$ELSE}
-  {$IFDEF HAS_TEncoding}
-    {$IFNDEF USE_ICONV}
-      {$DEFINE TIdTextEncoding_IS_NATIVE}
-    {$ENDIF}
-  {$ENDIF}
 {$ENDIF}
 {$IFDEF USE_ICONV}
   {$DEFINE DOTNET_OR_ICONV}

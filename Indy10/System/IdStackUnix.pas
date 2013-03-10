@@ -220,6 +220,7 @@ uses
   netdb,
   unix,
   IdResourceStrings,
+  IdResourceStringsUnix,
   IdException,
   SysUtils;
 
@@ -415,7 +416,7 @@ var
   LRetVal : Integer;
 begin
   case AIPVersion of
-    ID_IPv4 :
+    Id_IPv4 :
     begin
       if GetHostByName(AHostName, LH4) then
       begin
@@ -429,7 +430,7 @@ begin
       end;
       Result := NetAddrToStr(LI4[0]);
     end;
-    ID_IPv6 :
+    Id_IPv6 :
     begin
       SetLength(LI6, 10);
       LRetVal :=  ResolveName6(AHostName, LI6);
@@ -757,8 +758,7 @@ begin
   if LHostName = '' then begin
     RaiseLastSocketError;
   end;
-  // this won't get IPv6 addresses as I didn't find a way
-  // to enumerate IPv6 addresses on a linux machine
+  // TODO: support IPv6 addresses via ResolveName6()...
   if ResolveName(LHostName, LI) = 0 then
   begin
     AAddresses.BeginUpdate;
@@ -920,7 +920,7 @@ procedure TIdStackUnix.SetBlocking(ASocket: TIdStackSocketHandle;
   const ABlocking: Boolean);
 begin
   if not ABlocking then begin
-    raise EIdBlockingNotSupported.Create(RSStackNotSupportedOnUnix);
+    raise EIdNonBlockingNotSupported.Create(RSStackNonBlockingNotSupported);
   end;
 end;
 
@@ -1095,6 +1095,7 @@ begin
     LTime.tv_usec := (ATimeout mod 1000) * 1000;
     LTimePtr := @LTime;
   end;
+  // TODO: calculate the actual nfds value based on the Sets provided...
   Result := fpSelect(FD_SETSIZE, AReadSet, AWriteSet, AExceptSet, LTimePtr);
 end;
 
