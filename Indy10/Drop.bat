@@ -1,0 +1,1 @@
+del /s /q *.cfg* *.tmpl *.dpk *.bdsproj *.proj *.rc *.dproj *.ico

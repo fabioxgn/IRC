@@ -9,5 +9,4 @@ backup/
 *.res
 *.dbg
 config.ini
-Indy10/
 bin/
