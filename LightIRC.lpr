@@ -1,6 +1,7 @@
 program LightIRC;
 
 {$mode objfpc}{$H+}
+{$define UseCThreads}
 
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
@@ -16,4 +17,4 @@ begin
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.
-
+
