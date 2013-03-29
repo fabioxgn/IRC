@@ -13,7 +13,7 @@ object MainForm: TMainForm
   OnClose = FormClose
   OnShow = FormShow
   OnWindowStateChange = FormWindowStateChange
-  LCLVersion = '1.0.4.0'
+  LCLVersion = '1.0.8.0'
   Visible = True
   object PanelRight: TPanel
     Left = 170
@@ -37,7 +37,7 @@ object MainForm: TMainForm
       TabOrder = 0
       OnChange = PageControlChange
       OnMouseDown = PageControlMouseDown
-      Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
+      Options = [nboKeyboardTabSwitch]
       object TabServer: TTabSheet
         Caption = 'Server'
         ClientHeight = 582
@@ -87,7 +87,6 @@ object MainForm: TMainForm
       Align = alClient
       AutoExpand = True
       BorderStyle = bsNone
-      DefaultItemHeight = 18
       PopupMenu = PopupMenuTreeView
       ReadOnly = True
       RightClickSelect = True
@@ -4493,4 +4492,4 @@ object MainForm: TMainForm
     left = 457
     top = 330
   end
-end
+end
