@@ -219,8 +219,10 @@ end;
 
 procedure TIRC.OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
 begin
+  {$IFDEF DEBUG}
   FServerMessage := AMessage;
   TIdSync.SynchronizeMethod(@SendServerMessage);
+  {$ENDIF}
 end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
