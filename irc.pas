@@ -208,7 +208,7 @@ end;
 procedure TIRC.OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
 begin
   FServerMessage :=  Format('* Notice from %s to %s: %s ', [ANicknameFrom, ANicknameTo, ANotice]);
-  SendServerMessage;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
 procedure TIRC.OnMOTD(ASender: TIdContext; AMOTD: TStrings);
@@ -284,7 +284,7 @@ end;
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
 begin
   FServerMessage := AMsg;
-  SendServerMessage;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
 function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
@@ -393,4 +393,4 @@ begin
 end;
 
 end.
-
+
