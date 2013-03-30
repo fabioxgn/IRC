@@ -16,6 +16,7 @@ type
     TOnUserEvent = procedure(const Channel, User: string) of object;
     TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string) of object;
+    TOnShowPopup = procedure(const Msg: string) of object;
 
     TIRC = class
     private
@@ -35,6 +36,7 @@ type
       FOnUserLeft: TOnUserEvent;
       FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
+      FOnShowPopup: TOnShowPopup;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       procedure ConfigureEncoding;
@@ -75,6 +77,7 @@ type
       property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
+      property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
       property UserName: string read GetUserName;
       property Connected: Boolean read GetConnected;
       procedure AutoJoinChannels;
@@ -95,6 +98,7 @@ resourcestring
   StrJoined = '* Joined: ';
   StrParted = '* Parted: ';
   StrQuit = '* %s %s';
+  StrAlreadyConnected = 'Alread connected to %s. Disconnect first.';
 
 const
   NickNameFormat = '<%s>';
@@ -341,6 +345,12 @@ end;
 
 procedure TIRC.Connect;
 begin
+  if FIdIRC.Connected then
+  begin
+    if Assigned(FOnShowPopup) then
+       FOnShowPopup(Format(StrAlreadyConnected, [FIdIRC.Host]));
+    Exit;
+  end;
   ReadConfig;
   FIdIRC.Connect;
   ConfigureEncoding;

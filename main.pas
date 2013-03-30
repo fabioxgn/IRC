@@ -96,6 +96,7 @@ type
     procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveUserFromChannelList(const User: string; const Channel: string);
+    procedure OnShowPopup(const Msg: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
     procedure SelectChannelTab;
@@ -454,6 +455,11 @@ begin
   FChannelList.ChannelByName(Channel).Users.UserByNick(User).Node.Free;
 end;
 
+procedure TMainForm.OnShowPopup(const Msg: string);
+begin
+  ShowMessage(Msg);
+end;
+
 function TMainForm.GetTabByName(const Channel: string): TTabSheet;
 var
   I: Integer;
@@ -558,6 +564,7 @@ begin
   FIRC.OnUserParted := @OnUserParted;
   FIRC.OnChannelJoined := @OnChannelJoined;
   FIRC.OnUserQuit := @OnUserQuit;
+  FIRC.OnShowPopup := @OnShowPopup;
 
   ConfigureMemo(MemoServidor);
 end;
@@ -569,4 +576,4 @@ begin
   inherited Destroy;
 end;
 
-end.
+end.
