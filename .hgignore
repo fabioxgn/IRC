@@ -11,3 +11,5 @@ backup/
 config.ini
 bin/
 *.or
+LightIRCTests
+LightIRC
