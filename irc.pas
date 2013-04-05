@@ -102,7 +102,7 @@ resourcestring
 
 const
   NickNameFormat = '<%s>';
-  MessageFormat = NickNameFormat + ': %s';
+  MessageFormat = '%s ' + NickNameFormat + ': %s';
 
 procedure TIRC.ReadConfig;
 var
@@ -149,7 +149,7 @@ end;
 
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
 begin
-  Result := Format(MessageFormat, [NickName, Message]);
+  Result := Format(MessageFormat, [FormatDateTime(ShortTimeFormat, Now), NickName, Message]);
 end;
 
 function TIRC.GetConnected: Boolean;
@@ -264,8 +264,6 @@ begin
 
   FServerMessage := StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel;
   TIdSync.SynchronizeMethod(@SendServerMessage);
-
-  MessageReceived(AChannel, StrJoined + ANickname);
 end;
 
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
@@ -358,6 +356,10 @@ end;
 
 procedure TIRC.Disconnect;
 begin
+  if not FIdIRC.Connected then
+    Exit;
+
+  FIdIRC.IOHandler.InputBuffer.Clear;
   FIdIRC.Disconnect;
 end;
 
@@ -398,6 +400,7 @@ end;
 
 destructor TIRC.Destroy;
 begin
+  Disconnect;
   FIdIRC.Free;
   FAutoJoinChannels.Free;
   FCommands.Free;
