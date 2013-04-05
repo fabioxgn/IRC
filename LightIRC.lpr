@@ -6,6 +6,7 @@ program LightIRC;
 uses
   {$IFDEF UNIX}{$IFDEF UseCThreads}
   cthreads,
+  cmem,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, IRC, config, ConfigForm, TreeViewHelper;
