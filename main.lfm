@@ -1,33 +1,32 @@
 object MainForm: TMainForm
-  Left = 73
+  Left = 314
   Height = 653
-  Top = 202
+  Top = 251
   Width = 1012
   HorzScrollBar.Page = 1012
-  VertScrollBar.Page = 633
+  VertScrollBar.Page = 628
   AutoScroll = True
   Caption = 'LightIRC'
-  ClientHeight = 633
+  ClientHeight = 628
   ClientWidth = 1012
   Menu = MainMenu
-  OnClose = FormClose
   OnShow = FormShow
   OnWindowStateChange = FormWindowStateChange
   LCLVersion = '1.0.8.0'
   Visible = True
   object PanelRight: TPanel
     Left = 170
-    Height = 633
+    Height = 628
     Top = 0
     Width = 842
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 633
+    ClientHeight = 628
     ClientWidth = 842
     TabOrder = 1
     object PageControl: TPageControl
       Left = 0
-      Height = 610
+      Height = 601
       Top = 0
       Width = 842
       ActivePage = TabServer
@@ -40,13 +39,13 @@ object MainForm: TMainForm
       Options = [nboKeyboardTabSwitch]
       object TabServer: TTabSheet
         Caption = 'Server'
-        ClientHeight = 582
-        ClientWidth = 834
+        ClientHeight = 574
+        ClientWidth = 840
         object MemoServidor: TMemo
           Left = 0
-          Height = 582
+          Height = 574
           Top = 0
-          Width = 834
+          Width = 840
           Align = alClient
           BorderStyle = bsNone
           Font.Height = -15
@@ -59,8 +58,8 @@ object MainForm: TMainForm
     end
     object EditMensagem: TEdit
       Left = 0
-      Height = 23
-      Top = 610
+      Height = 27
+      Top = 601
       Width = 842
       Align = alBottom
       OnKeyDown = EditMensagemKeyDown
@@ -70,18 +69,18 @@ object MainForm: TMainForm
   end
   object PanelRoot: TPanel
     Left = 0
-    Height = 633
+    Height = 628
     Top = 0
     Width = 170
     Align = alLeft
     BevelOuter = bvNone
     Caption = 'PanelRoot'
-    ClientHeight = 633
+    ClientHeight = 628
     ClientWidth = 170
     TabOrder = 0
     object TreeViewUsers: TTreeView
       Left = 0
-      Height = 608
+      Height = 603
       Top = 25
       Width = 170
       Align = alClient
@@ -110,7 +109,7 @@ object MainForm: TMainForm
       TabOrder = 0
       object EditFilter: TEdit
         Left = 0
-        Height = 23
+        Height = 27
         Top = 0
         Width = 170
         Align = alTop
@@ -4491,5 +4490,10 @@ object MainForm: TMainForm
     OnDblClick = TrayIconDblClick
     left = 457
     top = 330
+  end
+  object ApplicationProperties: TApplicationProperties
+    OnException = ApplicationPropertiesException
+    left = 312
+    top = 128
   end
 end

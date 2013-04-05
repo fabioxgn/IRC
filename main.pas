@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList, TreeviewHelper;
+  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList, TreeviewHelper, sysutils;
 
 const
      LM_AFTER_SHOW = LM_USER + 300;
@@ -25,6 +25,7 @@ type
     ActionConnect: TAction;
     ActionDisconnect: TAction;
     ActionList: TActionList;
+    ApplicationProperties: TApplicationProperties;
     EditFilter: TEdit;
     EditMensagem: TEdit;
     MainMenu: TMainMenu;
@@ -56,13 +57,13 @@ type
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
+    procedure ApplicationPropertiesException(Sender: TObject; E: Exception);
     procedure EditFilterKeyDown(Sender: TObject; var Key: Word;
      Shift: TShiftState);
     procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
      Shift: TShiftState);
     procedure EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
-    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
@@ -95,7 +96,8 @@ type
     procedure OnMessageReceived(const Channel, Message: string);
     procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
-    procedure RemoveUserFromChannelList(const User: string; const Channel: string);
+    procedure RemoveNickFromChannelList(const Nick: string;
+      const ChannelName: string);
     procedure OnShowPopup(const Msg: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
@@ -112,7 +114,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, sysutils;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils;
 
 {$R *.lfm}
 
@@ -136,6 +138,17 @@ begin
 	  Exit;
 
   FIRC.JoinChannel(Channel);
+end;
+
+procedure TMainForm.ApplicationPropertiesException(Sender: TObject; E: Exception);
+begin
+  if E.ClassName = 'EIdConnClosedGracefully' then
+  begin
+    FIRC.Disconnect;
+    FIRC.Connect
+  end
+  else
+    MessageDlg('Error', E.Message, TMsgDlgType.mtError, [mbOK], 0);
 end;
 
 procedure TMainForm.EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -222,11 +235,6 @@ begin
 
   FIRC.SendMessage(EditMensagem.Text);
   EditMensagem.Clear;
-end;
-
-procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
-begin
-  FIRC.Disconnect;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -450,9 +458,18 @@ begin
   FChannelList.ChannelByName(Channel).Node.Free;
 end;
 
-procedure TMainForm.RemoveUserFromChannelList(const User: string; const Channel: string);
+procedure TMainForm.RemoveNickFromChannelList(const Nick: string; const ChannelName: string);
+var
+  User: TUser;
+  Channel: TChannel;
 begin
-  FChannelList.ChannelByName(Channel).Users.UserByNick(User).Node.Free;
+  Channel := FChannelList.ChannelByName(ChannelName);
+  if Channel = nil then
+     Exit;
+
+  User := Channel.Users.UserByNick(Nick);
+  if (User <> nil) then
+     User.Node.Free;
 end;
 
 procedure TMainForm.OnShowPopup(const Msg: string);
@@ -538,7 +555,7 @@ begin
   if User = FIRC.UserName then
     CloseChannel(Channel)
   else
-    RemoveUserFromChannelList(User, Channel);
+    RemoveNickFromChannelList(User, Channel);
 end;
 
 procedure TMainForm.OnUserQuit(const NickName: string);
