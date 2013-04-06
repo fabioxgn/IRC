@@ -56,7 +56,7 @@ type
       procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
       procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
       procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
-      procedure OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
+      procedure OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
       function RemoveOPVoicePrefix(const Channel: string): string;
@@ -139,7 +139,7 @@ begin
   FIdIRC.OnPrivateMessage:= @OnPrivateMessage;
   FIdIRC.OnNicknamesListReceived:= @OnNickNameListReceive;
   FIdIRC.OnJoin := @OnJoin;
-  FIdIRC.OnPart:= @OnLeave;
+  FIdIRC.OnPart:= @OnPart;
   FIdIRC.OnServerWelcome := @OnWelcome;
   FIdIRC.OnRaw := @OnRaw;
   FIdIRC.OnQuit := @OnQuit;
@@ -269,7 +269,7 @@ begin
   SendServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
 end;
 
-procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
+procedure TIRC.OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
 begin
   FChannel := AChannel;
   FNickName := ANickname;
@@ -278,7 +278,7 @@ begin
   if ANickname = UserName then
      Exit;
 
-  SendServerMessage(StrParted + ANickname + ' - ' + AChannel + ': ' + APartMessage);
+  SendServerMessage(StrParted + ANickname + ' - ' + ' -' + AHost + ': ' + APartMessage + ' - ' + AChannel);
 end;
 
 procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
