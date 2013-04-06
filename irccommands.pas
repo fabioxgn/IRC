@@ -19,6 +19,7 @@ type
     function GetCommandFromInput(const RawInput: string): string;
     function RemoveSlash(const Value: string): string;
     function ReplaceAlias(const Command: string): string;
+    function FixChannelName(const Command: string): string;
   public
     function GetRawCommand(const RawInput: string): string;
   end;
@@ -39,6 +40,8 @@ begin
   UserCommand := GetCommandFromInput(Raw);
   NewCommand := ReplaceAlias(UpperCase(UserCommand));
   Result := StringReplace(Raw, UserCommand, NewCommand, []);
+  if NewCommand = '/JOIN' then
+    Result := FixChannelName(Result);
   Result := RemoveSlash(Result);
 end;
 
@@ -83,6 +86,19 @@ begin
   end;
 end;
 
+function TIRCCommand.FixChannelName(const Command: string): string;
+var
+  Channel: string;
+begin
+  Channel := Trim(Copy(Command, Pos(' ', Command), MaxInt));
+  if (Channel = '') then
+     Exit;
+
+  Result := Command;
+  if Channel[1] <> '#' then
+     Result := StringReplace(Result, Channel, '#' + Channel, [])
+end;
+
 function TIRCCommand.GetRawCommand(const RawInput: string): string;
 begin
   if Pos('/', RawInput) <> 1 then
@@ -92,4 +108,4 @@ begin
 end;
 
 end.
-
+

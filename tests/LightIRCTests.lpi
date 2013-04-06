@@ -100,7 +100,7 @@
     <PathDelim Value="\"/>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="..\"/>
+      <OtherUnitFiles Value=".."/>
     </SearchPaths>
     <Linking>
       <Debugging>

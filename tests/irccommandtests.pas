@@ -21,6 +21,7 @@ type
     procedure ConvertToRaw;
     procedure JoinAliasJ;
     procedure RawCommand;
+    procedure FixChannelNameOnJoin;
   end;
 
 implementation
@@ -43,6 +44,14 @@ begin
   CheckEquals('AWAY brb', FSUT.GetRawCommand('/away brb'));
 end;
 
+procedure TIRCCommandsTests.FixChannelNameOnJoin;
+begin
+  CheckEquals('JOIN #ubuntu', FSUT.GetRawCommand('/j ubuntu'));
+  CheckEquals('JOIN #ubuntu', FSUT.GetRawCommand('/join ubuntu'));
+  CheckEquals('JOIN #ubuntu', FSUT.GetRawCommand('/join #ubuntu'));
+  CheckEquals('JOIN #join', FSUT.GetRawCommand('/join join'));
+end;
+
 procedure TIRCCommandsTests.SetUp;
 begin
   FSUT.Create;
@@ -57,4 +66,4 @@ initialization
 
   RegisterTest(TIRCCommandsTests);
 end.
-
+
