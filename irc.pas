@@ -65,8 +65,8 @@ type
       procedure SendNickNameListReceived;
       procedure SendParted;
       procedure SendQuit;
-      procedure SendServerMessage;
-      procedure SendNotice(const Msg: string); overload;
+      procedure SendServerMessage; overload;
+      procedure SendServerMessage(const Msg: string); overload;
       procedure SendUserJoined;
       procedure DoConnect;
       procedure MessageBox(const Msg: string);
@@ -147,7 +147,7 @@ end;
 
 procedure TIRC.ConfigureEncoding;
 begin
- FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
+ FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.ASCII;
 end;
 
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
@@ -220,6 +220,7 @@ end;
 
 procedure TIRC.OnMOTD(ASender: TIdContext; AMOTD: TStrings);
 begin
+
   FServerMessages := AMOTD;
   TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
@@ -265,7 +266,7 @@ begin
   FNickName := ANickname;
   TIdSync.SynchronizeMethod(@SendUserJoined);
 
-  SendNotice(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  SendServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
 end;
 
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
@@ -277,7 +278,7 @@ begin
   if ANickname = UserName then
      Exit;
 
-  SendNotice(StrParted + ANickname + ' - ' + AChannel + ': ' + APartMessage);
+  SendServerMessage(StrParted + ANickname + ' - ' + AChannel + ': ' + APartMessage);
 end;
 
 procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
@@ -338,7 +339,7 @@ begin
   FServerMessage := '';
 end;
 
-procedure TIRC.SendNotice(const Msg: string);
+procedure TIRC.SendServerMessage(const Msg: string);
 begin
   FServerMessage := Msg;
   TIdSync.SynchronizeMethod(@SendServerMessage);
