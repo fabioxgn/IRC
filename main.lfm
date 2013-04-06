@@ -10,6 +10,7 @@ object MainForm: TMainForm
   ClientHeight = 628
   ClientWidth = 1012
   Menu = MainMenu
+  OnClose = FormClose
   OnShow = FormShow
   OnWindowStateChange = FormWindowStateChange
   LCLVersion = '1.0.8.0'

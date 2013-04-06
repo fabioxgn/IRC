@@ -40,6 +40,7 @@ type
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       procedure ConfigureEncoding;
+      procedure ConfigureEvents;
       procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetConnected: Boolean;
@@ -59,6 +60,7 @@ type
       procedure OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
+      procedure RemoveEvents;
       function RemoveOPVoicePrefix(const Channel: string): string;
       procedure SendMessage;
       procedure SendChannelJoined;
@@ -132,22 +134,28 @@ end;
 procedure TIRC.ConfigureIdIRC;
 begin
   FIdIRC := TIdIRC.Create(nil);
-
-  FIdIRC.OnStatus:= @OnStatus;
-  FIdIRC.OnNotice:= @OnNotice;
-  FIdIRC.OnMOTD:= @OnMOTD;
-  FIdIRC.OnPrivateMessage:= @OnPrivateMessage;
-  FIdIRC.OnNicknamesListReceived:= @OnNickNameListReceive;
-  FIdIRC.OnJoin := @OnJoin;
-  FIdIRC.OnPart:= @OnPart;
-  FIdIRC.OnServerWelcome := @OnWelcome;
-  FIdIRC.OnRaw := @OnRaw;
-  FIdIRC.OnQuit := @OnQuit;
 end;
 
 procedure TIRC.ConfigureEncoding;
 begin
  FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.ASCII;
+end;
+
+procedure TIRC.ConfigureEvents;
+begin
+  // Remember to remove the events in the RemoveEvents method
+  // If you don't clen up the events the thread can try to notify
+  // the UI and cause a deadlock, see Issue #18
+  FIdIRC.OnStatus := @OnStatus;
+  FIdIRC.OnNotice := @OnNotice;
+  FIdIRC.OnMOTD := @OnMOTD;
+  FIdIRC.OnPrivateMessage := @OnPrivateMessage;
+  FIdIRC.OnNicknamesListReceived := @OnNickNameListReceive;
+  FIdIRC.OnJoin := @OnJoin;
+  FIdIRC.OnPart := @OnPart;
+  FIdIRC.OnServerWelcome := @OnWelcome;
+  FIdIRC.OnRaw := @OnRaw;
+  FIdIRC.OnQuit := @OnQuit;
 end;
 
 function TIRC.FormatarMensagem(const NickName, Message: string): string;
@@ -294,6 +302,20 @@ begin
   TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
+procedure TIRC.RemoveEvents;
+begin
+  FIdIRC.OnStatus := nil;
+  FIdIRC.OnNotice := nil;
+  FIdIRC.OnMOTD := nil;
+  FIdIRC.OnPrivateMessage := nil;
+  FIdIRC.OnNicknamesListReceived := nil;
+  FIdIRC.OnJoin := nil;
+  FIdIRC.OnPart := nil;
+  FIdIRC.OnServerWelcome := nil;
+  FIdIRC.OnRaw := nil;
+  FIdIRC.OnQuit := nil;
+end;
+
 function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
 begin
   Result := Channel;
@@ -380,6 +402,7 @@ begin
     Exit;
   end;
 
+  ConfigureEvents;
   ReadConfig;
   DoConnect;
   ConfigureEncoding;
@@ -390,13 +413,21 @@ begin
   if not FIdIRC.Connected then
     Exit;
 
+  // It's necessary to remove the event handlers or
+  // the thread can try to notify the interface
+  // and cause a deadlock here see Issue #18
+  RemoveEvents;
+
+  FIdIRC.Raw('QUIT');
+  {$IFDEF UNIX}
+  sleep(500); //Issue #18 - The thread deadlocks if we don't wait >(
+  {$ENDIF}
+
   try
-    FIdIRC.Disconnect;
+    FIdIRC.Disconnect(False);
+    FIdIRC.IOHandler.InputBuffer.Clear;
   except
-    try
-      FIdIRC.Disconnect(False);
-    except
-    end;
+    //We just ignore everything at this point and hope for the best
   end;
 end;
 
@@ -437,7 +468,6 @@ end;
 
 destructor TIRC.Destroy;
 begin
-  Disconnect;
   FIdIRC.Free;
   FAutoJoinChannels.Free;
   FCommands.Free;

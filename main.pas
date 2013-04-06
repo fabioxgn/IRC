@@ -68,6 +68,7 @@ type
      Shift: TShiftState);
     procedure EditInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditInputKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
@@ -259,6 +260,16 @@ begin
 
   FIRC.SendMessage(EditInput.Text);
   EditInput.Clear;
+end;
+
+procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
+begin
+  // We remove the exeption handling at this point
+  // in case of exception in the disconnect process
+  // we don't want the form to handle it
+  // we just want to close and go home :P
+  ApplicationProperties.OnException := nil;
+  FIRC.Disconnect;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
