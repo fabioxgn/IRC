@@ -66,7 +66,10 @@ type
       procedure SendParted;
       procedure SendQuit;
       procedure SendServerMessage;
+      procedure SendNotice(const Msg: string); overload;
       procedure SendUserJoined;
+      procedure DoConnect;
+      procedure MessageBox(const Msg: string);
     public
       property Log: TStrings read FLog write FLog;
       property Ready: Boolean read FReady;
@@ -262,8 +265,7 @@ begin
   FNickName := ANickname;
   TIdSync.SynchronizeMethod(@SendUserJoined);
 
-  FServerMessage := StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel;
-  TIdSync.SynchronizeMethod(@SendServerMessage);
+  SendNotice(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
 end;
 
 procedure TIRC.OnLeave(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
@@ -275,7 +277,7 @@ begin
   if ANickname = UserName then
      Exit;
 
-  MessageReceived(AChannel, StrParted + ANickname + ' -' + APartMessage);
+  SendNotice(StrParted + ANickname + ' - ' + AChannel + ': ' + APartMessage);
 end;
 
 procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
@@ -336,21 +338,49 @@ begin
   FServerMessage := '';
 end;
 
+procedure TIRC.SendNotice(const Msg: string);
+begin
+  FServerMessage := Msg;
+  TIdSync.SynchronizeMethod(@SendServerMessage);
+end;
+
 procedure TIRC.SendUserJoined;
 begin
   FOnUserJoined(FChannel, FNickname);
+end;
+
+procedure TIRC.DoConnect;
+begin
+  try
+     FIdIRC.Connect();
+  except
+    try
+      FIdIRC.Disconnect(False);
+    except
+    end;
+    if FIdIRC.IOHandler <> nil then
+       FIdIRC.IOHandler.InputBuffer.Clear;
+
+    MessageBox('Lost connection to server.');
+  end;
+end;
+
+procedure TIRC.MessageBox(const Msg: string);
+begin
+  if Assigned(FOnShowPopup) then
+     FOnShowPopup(Msg);
 end;
 
 procedure TIRC.Connect;
 begin
   if FIdIRC.Connected then
   begin
-    if Assigned(FOnShowPopup) then
-       FOnShowPopup(Format(StrAlreadyConnected, [FIdIRC.Host]));
+    MessageBox(Format(StrAlreadyConnected, [FIdIRC.Host]));
     Exit;
   end;
+
   ReadConfig;
-  FIdIRC.Connect;
+  DoConnect;
   ConfigureEncoding;
 end;
 
@@ -359,8 +389,14 @@ begin
   if not FIdIRC.Connected then
     Exit;
 
-  FIdIRC.IOHandler.InputBuffer.Clear;
-  FIdIRC.Disconnect;
+  try
+    FIdIRC.Disconnect;
+  except
+    try
+      FIdIRC.Disconnect(False);
+    except
+    end;
+  end;
 end;
 
 procedure TIRC.JoinChannel(const Name: string);
