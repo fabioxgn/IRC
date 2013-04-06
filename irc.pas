@@ -138,7 +138,8 @@ end;
 
 procedure TIRC.ConfigureEncoding;
 begin
- FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.ASCII;
+  FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
+  FIdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.Default;
 end;
 
 procedure TIRC.ConfigureEvents;
@@ -475,4 +476,4 @@ begin
 end;
 
 end.
-
+
