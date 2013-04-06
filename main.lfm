@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 314
+  Left = 552
   Height = 653
-  Top = 251
+  Top = 316
   Width = 1012
   HorzScrollBar.Page = 1012
   VertScrollBar.Page = 628
@@ -29,21 +29,23 @@ object MainForm: TMainForm
       Height = 601
       Top = 0
       Width = 842
+      TabStop = False
       ActivePage = TabServer
       Align = alClient
       PopupMenu = PopupMenuPageControl
       TabIndex = 0
       TabOrder = 0
       OnChange = PageControlChange
+      OnCloseTabClicked = ActionCloseTabExecute
       OnMouseDown = PageControlMouseDown
-      Options = [nboKeyboardTabSwitch]
+      Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
       object TabServer: TTabSheet
         Caption = 'Server'
-        ClientHeight = 574
+        ClientHeight = 571
         ClientWidth = 840
         object MemoServidor: TMemo
           Left = 0
-          Height = 574
+          Height = 571
           Top = 0
           Width = 840
           Align = alClient
@@ -56,14 +58,16 @@ object MainForm: TMainForm
         end
       end
     end
-    object EditMensagem: TEdit
+    object EditInput: TEdit
       Left = 0
       Height = 27
       Top = 601
       Width = 842
       Align = alBottom
-      OnKeyDown = EditMensagemKeyDown
-      OnKeyUp = EditMensagemKeyUp
+      Font.Color = 13684944
+      OnKeyDown = EditInputKeyDown
+      OnKeyUp = EditInputKeyUp
+      ParentFont = False
       TabOrder = 1
     end
   end
@@ -78,33 +82,16 @@ object MainForm: TMainForm
     ClientHeight = 628
     ClientWidth = 170
     TabOrder = 0
-    object TreeViewUsers: TTreeView
-      Left = 0
-      Height = 603
-      Top = 25
-      Width = 170
-      Align = alClient
-      AutoExpand = True
-      BorderStyle = bsNone
-      PopupMenu = PopupMenuTreeView
-      ReadOnly = True
-      RightClickSelect = True
-      ScrollBars = ssAutoBoth
-      SortType = stText
-      TabOrder = 1
-      OnDblClick = TreeViewUsersDblClick
-      OnSelectionChanged = TreeViewUsersSelectionChanged
-      Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
-    end
     object PanelLeft: TPanel
       Left = 0
-      Height = 25
+      Height = 628
       Top = 0
       Width = 170
       Align = alTop
+      Anchors = [akTop, akLeft, akRight, akBottom]
       BevelOuter = bvNone
       Caption = 'PanelLeft'
-      ClientHeight = 25
+      ClientHeight = 628
       ClientWidth = 170
       TabOrder = 0
       object EditFilter: TEdit
@@ -115,7 +102,27 @@ object MainForm: TMainForm
         Align = alTop
         OnKeyDown = EditFilterKeyDown
         OnKeyUp = EditFilterKeyUp
+        ParentFont = False
         TabOrder = 0
+      end
+      object TreeViewUsers: TTreeView
+        Left = 0
+        Height = 601
+        Top = 27
+        Width = 170
+        Align = alClient
+        AutoExpand = True
+        BorderStyle = bsNone
+        ParentFont = False
+        PopupMenu = PopupMenuTreeView
+        ReadOnly = True
+        RightClickSelect = True
+        ScrollBars = ssAutoBoth
+        SortType = stText
+        TabOrder = 1
+        OnDblClick = TreeViewUsersDblClick
+        OnSelectionChanged = TreeViewUsersSelectionChanged
+        Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
       end
     end
   end
@@ -178,6 +185,10 @@ object MainForm: TMainForm
       Caption = 'Close'
       OnExecute = ActionCloseChannelExecute
     end
+    object ActionExit: TAction
+      Caption = 'Exit'
+      OnExecute = ActionExitExecute
+    end
   end
   object PopupMenuTreeView: TPopupMenu
     OnPopup = PopupMenuTreeViewPopup
@@ -201,6 +212,7 @@ object MainForm: TMainForm
     end
   end
   object TrayIcon: TTrayIcon
+    PopUpMenu = PopupMenuTray
     Icon.Data = {
       501702000000010006000000000001002000E291000066000000808000000100
       20002808010048920000404000000100200028420000709A0100303000000100
@@ -4487,7 +4499,7 @@ object MainForm: TMainForm
       8001AC418001AC41C003AC41E007AC41F01FAC41
     }
     Visible = True
-    OnDblClick = TrayIconDblClick
+    OnClick = TrayIconClick
     left = 457
     top = 330
   end
@@ -4495,5 +4507,12 @@ object MainForm: TMainForm
     OnException = ApplicationPropertiesException
     left = 312
     top = 128
+  end
+  object PopupMenuTray: TPopupMenu
+    left = 608
+    top = 96
+    object MenuItemExit: TMenuItem
+      Action = ActionExit
+    end
   end
 end

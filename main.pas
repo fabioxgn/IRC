@@ -16,6 +16,7 @@ type
   { TMainForm }
 
   TMainForm = class(TForm)
+    ActionExit: TAction;
    ActionCloseChannel: TAction;
    ActionCloseTab: TAction;
     ActionChat: TAction;
@@ -27,9 +28,10 @@ type
     ActionList: TActionList;
     ApplicationProperties: TApplicationProperties;
     EditFilter: TEdit;
-    EditMensagem: TEdit;
+    EditInput: TEdit;
     MainMenu: TMainMenu;
     MemoServidor: TMemo;
+    MenuItemExit: TMenuItem;
     MenuItemConnect: TMenuItem;
     MenuItemDisconnect: TMenuItem;
     MenuItemCloseChannel: TMenuItem;
@@ -44,6 +46,7 @@ type
     PanelRoot: TPanel;
     PanelLeft: TPanel;
     PanelRight: TPanel;
+    PopupMenuTray: TPopupMenu;
     PopupMenuPageControl: TPopupMenu;
     PopupMenuTreeView: TPopupMenu;
     TabServer: TTabSheet;
@@ -56,21 +59,22 @@ type
     procedure ActionConnectExecute(Sender: TObject);
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDisconnectExecute(Sender: TObject);
+    procedure ActionExitExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
     procedure ApplicationPropertiesException(Sender: TObject; E: Exception);
     procedure EditFilterKeyDown(Sender: TObject; var Key: Word;
      Shift: TShiftState);
     procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
      Shift: TShiftState);
-    procedure EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
-    procedure EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure EditInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure EditInputKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
     procedure PageControlChange(Sender: TObject);
     procedure PageControlMouseDown(Sender: TObject; Button: TMouseButton;
      Shift: TShiftState; X, Y: Integer);
     procedure PopupMenuTreeViewPopup(Sender: TObject);
-    procedure TrayIconDblClick(Sender: TObject);
+    procedure TrayIconClick(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
   private
@@ -82,6 +86,7 @@ type
     procedure AddUserToTreeView(const User: TUser; const Channel: TChannel);
     procedure CloseChannel(const ChannelName: string);
     procedure ConfigureMemo(var Memo: TMemo);
+    procedure SetColors;
     function FindChannelNode(const Channel: string): TTreeNode;
     function GetChannelTab(const Channel: string): TTabSheet;
     function IsActiveTabChannel: Boolean;
@@ -102,6 +107,7 @@ type
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
     procedure SelectChannelTab;
+    procedure SetFocusEditInput;
     procedure WmAfterShow(var Msg: TLMessage); message LM_AFTER_SHOW;
     procedure AfterShow;
   public
@@ -114,7 +120,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, IRCUtils;
+uses FileUtil, Graphics, ConfigForm, config, StringUtils, IRCUtils;
 
 {$R *.lfm}
 
@@ -122,10 +128,18 @@ uses FileUtil, ConfigForm, config, StringUtils, IRCUtils;
 
 const
   DefaultFontSize = 11;
+  BackGroundColor = $00222827;
+  FontColor = $00D0D0D0;
+  LightColor = $00D0D0D0;
 
 procedure TMainForm.ActionDisconnectExecute(Sender: TObject);
 begin
   FIRC.Disconnect;
+end;
+
+procedure TMainForm.ActionExitExecute(Sender: TObject);
+begin
+  Close;
 end;
 
 procedure TMainForm.ActionJoinChannelExecute(Sender: TObject);
@@ -171,22 +185,22 @@ begin
  end;
 end;
 
-procedure TMainForm.EditMensagemKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+procedure TMainForm.EditInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
 var
   Word, Nick: string;
   CarretPos: TPoint;
 begin
-  if key <> VK_TAB then
+  if (key <> VK_TAB) or (EditInput.Text = '') then
    Exit;
 
-  Word := TStringUtils.GetWordAtCursor(EditMensagem.Text, EditMensagem.CaretPos.x);
+  Word := TStringUtils.GetWordAtCursor(EditInput.Text, EditInput.CaretPos.x);
   Nick := FChannelList.AutoComplete(FIRC.ActiveChannel, Word);
   if Nick <> '' then
   begin
-    EditMensagem.Text := StringReplace(EditMensagem.Text, Word, Nick, []);
-    CarretPos.x := Pos(Nick, EditMensagem.Text) + Length(Nick);
-    CarretPos.y := EditMensagem.CaretPos.y;
-    EditMensagem.CaretPos := CarretPos;
+    EditInput.Text := StringReplace(EditInput.Text, Word, Nick, []);
+    CarretPos.x := Pos(Nick, EditInput.Text) + Length(Nick);
+    CarretPos.y := EditInput.CaretPos.y;
+    EditInput.CaretPos := CarretPos;
   end;
 
   Key := VK_UNDEFINED;
@@ -208,8 +222,18 @@ begin
 end;
 
 procedure TMainForm.ActionCloseTabExecute(Sender: TObject);
+var
+   TabToClose: TTabSheet;
 begin
   if PageControl.ActivePage = nil then
+     Exit;
+
+  if Sender is TTabSheet then
+     TabToClose := TTabSheet(Sender)
+  else
+     TabToClose := PageControl.ActivePage;
+
+  if TabToClose = TabServer then
      Exit;
 
   if IsActiveTabChannel then
@@ -228,13 +252,13 @@ begin
   FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
 end;
 
-procedure TMainForm.EditMensagemKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+procedure TMainForm.EditInputKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
 begin
   if Key <> VK_RETURN then
     Exit;
 
-  FIRC.SendMessage(EditMensagem.Text);
-  EditMensagem.Clear;
+  FIRC.SendMessage(EditInput.Text);
+  EditInput.Clear;
 end;
 
 procedure TMainForm.FormShow(Sender: TObject);
@@ -304,6 +328,16 @@ begin
   Memo.Font.Size := DefaultFontSize;
   Memo.TabStop := False;
   Memo.BorderStyle := bsSingle;
+  Memo.Color := BackGroundColor;
+  Memo.Font.Color := FontColor;
+end;
+
+procedure TMainForm.SetColors;
+begin
+  EditFilter.Color := LightColor;
+  EditInput.Color := BackGroundColor;;
+  EditInput.Font.Color := FontColor;
+  TreeViewUsers.BackgroundColor := LightColor;
 end;
 
 function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
@@ -396,6 +430,8 @@ begin
     FIRC.ActiveChannel := ''
   else
     FIRC.ActiveChannel := PageControl.ActivePage.Caption;
+
+  SetFocusEditInput;
 end;
 
 procedure TMainForm.PageControlMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -421,7 +457,7 @@ begin
   ActionCloseChat.Visible := IsSelectedNodeUser and IsChatOpen;
 end;
 
-procedure TMainForm.TrayIconDblClick(Sender: TObject);
+procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
   if not Visible then
   begin
@@ -511,6 +547,12 @@ begin
   PageControl.ActivePage := GetChannelTab(TreeViewUsers.Selected.Text);
 end;
 
+procedure TMainForm.SetFocusEditInput;
+begin
+  if EditInput.CanFocus then
+     EditInput.SetFocus;
+end;
+
 procedure TMainForm.WmAfterShow(var Msg: TLMessage);
 begin
   AfterShow;
@@ -518,6 +560,8 @@ end;
 
 procedure TMainForm.AfterShow;
 begin
+  SetFocusEditInput;
+
   if FIRC.Connected then
     Exit;
 
@@ -584,6 +628,7 @@ begin
   FIRC.OnShowPopup := @OnShowPopup;
 
   ConfigureMemo(MemoServidor);
+  SetColors;
 end;
 
 destructor TMainForm.Destroy;
