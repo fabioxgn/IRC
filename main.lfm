@@ -1,13 +1,13 @@
 object MainForm: TMainForm
-  Left = 552
-  Height = 653
-  Top = 316
+  Left = 198
+  Height = 656
+  Top = 136
   Width = 1012
   HorzScrollBar.Page = 1012
-  VertScrollBar.Page = 628
+  VertScrollBar.Page = 636
   AutoScroll = True
   Caption = 'LightIRC'
-  ClientHeight = 628
+  ClientHeight = 636
   ClientWidth = 1012
   Menu = MainMenu
   OnClose = FormClose
@@ -17,17 +17,17 @@ object MainForm: TMainForm
   Visible = True
   object PanelRight: TPanel
     Left = 170
-    Height = 628
+    Height = 613
     Top = 0
     Width = 842
     Align = alClient
     BevelOuter = bvNone
-    ClientHeight = 628
+    ClientHeight = 613
     ClientWidth = 842
     TabOrder = 1
     object PageControl: TPageControl
       Left = 0
-      Height = 601
+      Height = 590
       Top = 0
       Width = 842
       TabStop = False
@@ -42,13 +42,13 @@ object MainForm: TMainForm
       Options = [nboShowCloseButtons, nboKeyboardTabSwitch]
       object TabServer: TTabSheet
         Caption = 'Server'
-        ClientHeight = 571
-        ClientWidth = 840
+        ClientHeight = 562
+        ClientWidth = 834
         object MemoServidor: TMemo
           Left = 0
-          Height = 571
+          Height = 562
           Top = 0
-          Width = 840
+          Width = 834
           Align = alClient
           BorderStyle = bsNone
           Font.Height = -15
@@ -61,8 +61,8 @@ object MainForm: TMainForm
     end
     object EditInput: TEdit
       Left = 0
-      Height = 27
-      Top = 601
+      Height = 23
+      Top = 590
       Width = 842
       Align = alBottom
       Font.Color = 13684944
@@ -74,30 +74,30 @@ object MainForm: TMainForm
   end
   object PanelRoot: TPanel
     Left = 0
-    Height = 628
+    Height = 613
     Top = 0
     Width = 170
     Align = alLeft
     BevelOuter = bvNone
     Caption = 'PanelRoot'
-    ClientHeight = 628
+    ClientHeight = 613
     ClientWidth = 170
     TabOrder = 0
     object PanelLeft: TPanel
       Left = 0
-      Height = 628
+      Height = 613
       Top = 0
       Width = 170
       Align = alTop
       Anchors = [akTop, akLeft, akRight, akBottom]
       BevelOuter = bvNone
       Caption = 'PanelLeft'
-      ClientHeight = 628
+      ClientHeight = 613
       ClientWidth = 170
       TabOrder = 0
       object EditFilter: TEdit
         Left = 0
-        Height = 27
+        Height = 23
         Top = 0
         Width = 170
         Align = alTop
@@ -108,12 +108,13 @@ object MainForm: TMainForm
       end
       object TreeViewUsers: TTreeView
         Left = 0
-        Height = 601
-        Top = 27
+        Height = 590
+        Top = 23
         Width = 170
         Align = alClient
         AutoExpand = True
         BorderStyle = bsNone
+        DefaultItemHeight = 18
         ParentFont = False
         PopupMenu = PopupMenuTreeView
         ReadOnly = True
@@ -126,6 +127,20 @@ object MainForm: TMainForm
         Options = [tvoAutoExpand, tvoAutoItemHeight, tvoHideSelection, tvoKeepCollapsedNodes, tvoReadOnly, tvoRightClickSelect, tvoShowButtons, tvoShowLines, tvoShowRoot, tvoToolTips, tvoThemedDraw]
       end
     end
+  end
+  object StatusBar: TStatusBar
+    Left = 0
+    Height = 23
+    Top = 613
+    Width = 1012
+    Panels = <    
+      item
+        Alignment = taRightJustify
+        Bevel = pbRaised
+        Text = 'Connected'
+        Width = 50
+      end>
+    SimplePanel = False
   end
   object MainMenu: TMainMenu
     left = 440
@@ -4511,4 +4526,10 @@ object MainForm: TMainForm
       Action = ActionExit
     end
   end
-end
+  object TimerConnection: TTimer
+    Interval = 5000
+    OnTimer = TimerConnectionTimer
+    left = 408
+    top = 80
+  end
+end

@@ -48,7 +48,9 @@ type
     PopupMenuTray: TPopupMenu;
     PopupMenuPageControl: TPopupMenu;
     PopupMenuTreeView: TPopupMenu;
+    StatusBar: TStatusBar;
     TabServer: TTabSheet;
+    TimerConnection: TTimer;
     TrayIcon: TTrayIcon;
     TreeViewUsers: TTreeView;
     procedure ActionChatExecute(Sender: TObject);
@@ -73,6 +75,7 @@ type
     procedure PageControlMouseDown(Sender: TObject; Button: TMouseButton;
      Shift: TShiftState; X, Y: Integer);
     procedure PopupMenuTreeViewPopup(Sender: TObject);
+    procedure TimerConnectionTimer(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
@@ -120,7 +123,8 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper,
+ strutils;
 
 {$R *.lfm}
 
@@ -444,6 +448,11 @@ begin
   ActionCloseChat.Visible := IsSelectedNodeUser and IsChatOpen;
 end;
 
+procedure TMainForm.TimerConnectionTimer(Sender: TObject);
+begin
+  StatusBar.Panels[0].Text := IfThen(FIRC.IsConnected, 'Connected', 'Disconnected');
+end;
+
 procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
   if not Visible then
@@ -562,7 +571,6 @@ begin
   //Log must be set here, if set in the Create it crashes misteriously
   FIRC.Log := MemoServidor.Lines;
   FIRC.Connect;
-  FIRC.AutoJoinChannels;
 end;
 
 procedure TMainForm.OnApplicationMinimize(Sender: TObject);
