@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException;
 
 type
 
@@ -47,8 +47,9 @@ type
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
       function IsInputCommand(const Message: string): Boolean;
-      procedure MessageToChannel(const Message: string);
+      procedure MessageToChannel(const Msg: string);
       procedure MessageReceived(const Channel, Message: string);
+      procedure Raw(const RawString: string);
       procedure ReadConfig;
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
       procedure OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
@@ -62,6 +63,7 @@ type
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
       procedure RemoveEvents;
       function RemoveOPVoicePrefix(const Channel: string): string;
+      procedure Say(const Channel, Msg: string);
       procedure SendMessage;
       procedure SendChannelJoined;
       procedure SendNickNameListReceived;
@@ -72,6 +74,7 @@ type
       procedure SendUserJoined;
       procedure DoConnect;
       procedure MessageBox(const Msg: string);
+      procedure HandleIdException(E: EIdException);
     public
       property Log: TStrings read FLog write FLog;
       property Ready: Boolean read FReady;
@@ -88,8 +91,8 @@ type
       procedure AutoJoinChannels;
       procedure Connect;
       procedure Disconnect;
-      procedure JoinChannel(const Name: string);
-      procedure LeaveChannel(const Name: string);
+      procedure Join(const Name: string);
+      procedure Part(const Name: string);
       procedure SendMessage(const Message: string);
       constructor Create;
       destructor Destroy; override;
@@ -191,17 +194,17 @@ begin
      Exit;
 
   for I := 0 to FAutoJoinChannels.Count -1 do
-    JoinChannel(FAutoJoinChannels.ValueFromIndex[I]);
+    Join(FAutoJoinChannels.ValueFromIndex[I]);
   FreeAndNil(FAutoJoinChannels);
 end;
 
-procedure TIRC.MessageToChannel(const Message: string);
+procedure TIRC.MessageToChannel(const Msg: string);
 var
   Channel: string;
 begin
   Channel := RemoveOPVoicePrefix(FActiveChannel);
-  FIdIRC.Say(Channel, Message);
-  MessageReceived(FActiveChannel, FormatarMensagem(UserName, Message))
+  Say(Channel, Msg);
+  MessageReceived(FActiveChannel, FormatarMensagem(UserName, Msg))
 end;
 
 procedure TIRC.MessageReceived(const Channel, Message: string);
@@ -209,6 +212,16 @@ begin
   FChannel := Channel;
   FMessage := Message;
   TIdSync.SynchronizeMethod(@SendMessage);
+end;
+
+procedure TIRC.Raw(const RawString: string);
+begin
+  try
+    FIdIRC.Raw(RawString)
+  except
+    on E: EIdException do
+      HandleIdException(E);
+  end;
 end;
 
 procedure TIRC.OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
@@ -323,6 +336,16 @@ begin
     Result := Copy(Channel, 2, MaxInt);
 end;
 
+procedure TIRC.Say(const Channel, Msg: string);
+begin
+  try
+    FIdIRC.Say(Channel, Msg);
+  except
+    on E: EIdException do
+      HandleIdException(E);
+  end;
+end;
+
 procedure TIRC.SendMessage;
 begin
   FOnMessageReceived(FChannel, FMessage);
@@ -375,32 +398,42 @@ end;
 procedure TIRC.DoConnect;
 begin
   try
-     FIdIRC.Connect();
+     FIdIRC.Connect;
   except
-    try
-      FIdIRC.Disconnect(False);
-    except
-    end;
-    if FIdIRC.IOHandler <> nil then
-       FIdIRC.IOHandler.InputBuffer.Clear;
+    on E: Exception do
+    begin
+      try
+        FIdIRC.Disconnect(False);
+      except
+      end;
 
-    MessageBox('Lost connection to server.');
+      if FIdIRC.IOHandler <> nil then
+        FIdIRC.IOHandler.InputBuffer.Clear;
+
+      MessageBox(Format('Cannot connect to server: %s', [E.Message]));
+      Abort;
+    end;
   end;
 end;
 
 procedure TIRC.MessageBox(const Msg: string);
 begin
+  SendServerMessage('Disconnected from server.');
   if Assigned(FOnShowPopup) then
      FOnShowPopup(Msg);
+end;
+
+procedure TIRC.HandleIdException(E: EIdException);
+begin
+  MessageBox(E.Message);
+  if not FIdIRC.Connected then
+    Connect;
 end;
 
 procedure TIRC.Connect;
 begin
   if FIdIRC.Connected then
-  begin
-    MessageBox(Format(StrAlreadyConnected, [FIdIRC.Host]));
-    Exit;
-  end;
+     Disconnect;
 
   ConfigureEvents;
   ReadConfig;
@@ -418,8 +451,8 @@ begin
   // and cause a deadlock here see Issue #18
   RemoveEvents;
 
-  FIdIRC.Raw('QUIT');
   {$IFDEF UNIX}
+  Raw('QUIT');
   sleep(500); //Issue #18 - The thread deadlocks if we don't wait >(
   {$ENDIF}
 
@@ -431,14 +464,24 @@ begin
   end;
 end;
 
-procedure TIRC.JoinChannel(const Name: string);
+procedure TIRC.Join(const Name: string);
 begin
-  FIdIRC.Join(Name);
+  try
+    FIdIRC.Join(Name);
+   except
+     on E: EIdException do
+       HandleIdException(E);
+   end;
 end;
 
-procedure TIRC.LeaveChannel(const Name: string);
+procedure TIRC.Part(const Name: string);
 begin
-  FIdIRC.Part(Name);
+  try
+    FIdIRC.Part(Name);
+  except
+    on E: EIdException do
+      HandleIdException(E);
+  end;
 end;
 
 procedure TIRC.SendMessage(const Message: string);
@@ -453,7 +496,7 @@ begin
     if IsCommand then
        RawString := FCommands.GetRawCommand(RawString);
 
-    FIdIRC.Raw(RawString)
+    Raw(RawString);
   end
   else
     MessageToChannel(Message);
