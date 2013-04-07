@@ -553,12 +553,13 @@ procedure TMainForm.AfterShow;
 begin
   SetFocusEditInput;
 
-  if FIRC.Connected then
+  if FIRC.IsConnected then
     Exit;
 
   if not FileExistsUTF8(DefaultConfigFile) then
     MostrarConfig;
 
+  //Log must be set here, if set in the Create it crashes misteriously
   FIRC.Log := MemoServidor.Lines;
   FIRC.Connect;
   FIRC.AutoJoinChannels;
