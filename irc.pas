@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, config, IdException;
 
 type
 
@@ -37,11 +37,9 @@ type
       FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
-      FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       procedure ConfigureEncoding;
       procedure ConfigureEvents;
-      procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
@@ -49,7 +47,6 @@ type
       procedure MessageToChannel(const Msg: string);
       procedure MessageReceived(const Channel, Message: string);
       procedure Raw(const RawString: string);
-      procedure ReadConfig;
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
       procedure OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
       procedure OnMOTD(ASender: TIdContext; AMOTD: TStrings);
@@ -74,6 +71,7 @@ type
       procedure DoConnect;
       procedure MessageBox(const Msg: string);
       procedure HandleIdException(E: EIdException);
+      procedure AutoJoinChannels(Channels: TStrings);
     public
       property Log: TStrings read FLog write FLog;
       property Ready: Boolean read FReady;
@@ -86,7 +84,6 @@ type
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
       property UserName: string read GetUserName;
-      procedure AutoJoinChannels;
       function IsConnected: Boolean;
       procedure Connect;
       procedure Disconnect;
@@ -99,7 +96,7 @@ type
 
 implementation
 
-uses config, IdSync, IdGlobal, sysutils;
+uses IdSync, IdGlobal, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
@@ -110,33 +107,6 @@ resourcestring
 const
   NickNameFormat = '<%s>';
   MessageFormat = '%s ' + NickNameFormat + ': %s';
-
-procedure TIRC.ReadConfig;
-var
-  C: TIRCConfig;
-begin
-  C := TIRCConfig.Create;
-  try
-    C.Load;
-
-    FIdIRC.Host := C.Host;
-    FIdIRC.Port := C.Port;
-    FIdIRC.Username:= C.Username;
-    FIdIRC.Nickname:= C.Nickname;
-    FIdIRC.RealName:= C.RealName;
-    FIdIRC.AltNickname := C.AltNickname;
-
-    FAutoJoinChannels := TStringList.Create;
-    FAutoJoinChannels.AddStrings(C.Channels);
-  finally
-    C.Free;
-  end;
-end;
-
-procedure TIRC.ConfigureIdIRC;
-begin
-
-end;
 
 procedure TIRC.ConfigureEncoding;
 begin
@@ -190,16 +160,12 @@ begin
   Result := Pos('/', TrimLeft(Message)) = 1;
 end;
 
-procedure TIRC.AutoJoinChannels;
+procedure TIRC.AutoJoinChannels(Channels: TStrings);
 var
   I: Integer;
 begin
-  if FAutoJoinChannels = nil then
-     Exit;
-
-  for I := 0 to FAutoJoinChannels.Count -1 do
-    Join(FAutoJoinChannels.ValueFromIndex[I]);
-  FreeAndNil(FAutoJoinChannels);
+  for I := 0 to Channels.Count -1 do
+    Join(Channels.ValueFromIndex[I]);
 end;
 
 procedure TIRC.MessageToChannel(const Msg: string);
@@ -433,14 +399,32 @@ begin
 end;
 
 procedure TIRC.Connect;
+var
+  Config: TIRCConfig;
 begin
   if IsConnected then
      Disconnect;
 
   ConfigureEvents;
-  ReadConfig;
-  DoConnect;
-  ConfigureEncoding;
+
+  Config := TIRCConfig.Create;
+  try
+	   Config.Load;
+	   FIdIRC.Host := Config.Host;
+	   FIdIRC.Port := Config.Port;
+
+	   DoConnect;
+    ConfigureEncoding;
+
+	   FIdIRC.Username:= Config.Username;
+	   FIdIRC.Nickname:= Config.Nickname;
+	   FIdIRC.RealName:= Config.RealName;
+	   FIdIRC.AltNickname := Config.AltNickname;
+
+    AutoJoinChannels(Config.Channels);
+  finally
+    Config.Free;
+  end;
 end;
 
 procedure TIRC.Disconnect;
@@ -514,7 +498,6 @@ end;
 destructor TIRC.Destroy;
 begin
   FIdIRC.Free;
-  FAutoJoinChannels.Free;
   FCommands.Free;
   inherited;
 end;
