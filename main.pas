@@ -150,7 +150,7 @@ begin
   if Channel = '' then
 	  Exit;
 
-  FIRC.JoinChannel(Channel);
+  FIRC.Join(Channel);
 end;
 
 procedure TMainForm.EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -225,7 +225,7 @@ begin
      Exit;
 
   if IsActiveTabChannel then
-    FIRC.LeaveChannel(PageControl.ActivePage.Caption)
+    FIRC.Part(PageControl.ActivePage.Caption)
   else
     GetTabByName(PageControl.ActivePage.Caption).Free;
 end;
@@ -237,7 +237,7 @@ end;
 
 procedure TMainForm.ActionCloseChannelExecute(Sender: TObject);
 begin
-  FIRC.LeaveChannel(TreeViewUsers.Selected.Text);
+  FIRC.Part(TreeViewUsers.Selected.Text);
 end;
 
 procedure TMainForm.EditInputKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
@@ -543,7 +543,11 @@ end;
 procedure TMainForm.SetFocusEditInput;
 begin
   if EditInput.CanFocus then
-     EditInput.SetFocus;
+    try
+      EditInput.SetFocus;
+    except
+      on E: EInvalidOperation do; //Even checking for can focus this is crashing on Linux
+    end;
 end;
 
 procedure TMainForm.WmAfterShow(var Msg: TLMessage);
