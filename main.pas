@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, Buttons, IRC, ChannelList, TreeviewHelper, sysutils;
+  ExtCtrls, LCLIntf, LMessages, LCLType, IRC, ChannelList, sysutils;
 
 const
      LM_AFTER_SHOW = LM_USER + 300;
@@ -17,8 +17,8 @@ type
 
   TMainForm = class(TForm)
     ActionExit: TAction;
-   ActionCloseChannel: TAction;
-   ActionCloseTab: TAction;
+    ActionCloseChannel: TAction;
+    ActionCloseTab: TAction;
     ActionChat: TAction;
     ActionCloseChat: TAction;
     ActionJoinChannel: TAction;
@@ -109,6 +109,7 @@ type
     procedure SetFocusEditInput;
     procedure WmAfterShow(var Msg: TLMessage); message LM_AFTER_SHOW;
     procedure AfterShow;
+    procedure OnApplicationMinimize(Sender: TObject);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -119,7 +120,7 @@ var
 
 implementation
 
-uses FileUtil, Graphics, ConfigForm, config, StringUtils, IRCUtils;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper;
 
 {$R *.lfm}
 
@@ -448,14 +449,10 @@ begin
   if not Visible then
   begin
     Show;
-    Application.Restore;
+    Application.Restore
   end
   else
-  begin
     Application.Minimize;
-    Hide;
-    ShowInTaskBar := stNever;
-  end;
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
@@ -567,6 +564,12 @@ begin
   FIRC.AutoJoinChannels;
 end;
 
+procedure TMainForm.OnApplicationMinimize(Sender: TObject);
+begin
+  Hide;
+  ShowInTaskBar := stNever;
+end;
+
 procedure TMainForm.OnNickListReceived(const ChannelName: string; List: TStrings);
 var
   Channel: TChannel;
@@ -610,6 +613,8 @@ constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
+  Application.OnMinimize := @OnApplicationMinimize;
+
   FChannelList := TChannelList.Create;
 
   FIRC := TIRC.Create;
@@ -632,4 +637,4 @@ begin
   inherited Destroy;
 end;
 
-end.
+end.
