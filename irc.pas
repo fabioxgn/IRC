@@ -43,7 +43,6 @@ type
       procedure ConfigureEvents;
       procedure ConfigureIdIRC;
       function FormatarMensagem(const NickName, Message: string): string;
-      function GetConnected: Boolean;
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
       function IsInputCommand(const Message: string): Boolean;
@@ -87,8 +86,8 @@ type
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
       property UserName: string read GetUserName;
-      property Connected: Boolean read GetConnected;
       procedure AutoJoinChannels;
+      function IsConnected: Boolean;
       procedure Connect;
       procedure Disconnect;
       procedure Join(const Name: string);
@@ -136,7 +135,7 @@ end;
 
 procedure TIRC.ConfigureIdIRC;
 begin
-  FIdIRC := TIdIRC.Create(nil);
+
 end;
 
 procedure TIRC.ConfigureEncoding;
@@ -167,11 +166,6 @@ begin
   Result := Format(MessageFormat, [FormatDateTime(ShortTimeFormat, Now), NickName, Message]);
 end;
 
-function TIRC.GetConnected: Boolean;
-begin
-  Result := FIdIRC.Connected;
-end;
-
 function TIRC.GetUserName: string;
 begin
   Result := FIdIRC.UsedNickname;
@@ -180,6 +174,15 @@ end;
 function TIRC.HighlightUserName(const AMessage: String): string;
 begin
   Result := StringReplace(AMessage, UserName, Format(NickNameFormat, [UserName]), [])
+end;
+
+function TIRC.IsConnected: Boolean;
+begin
+  try
+    Result := FIdIRC.Connected;
+  except
+    Result := False;
+  end;
 end;
 
 function TIRC.IsInputCommand(const Message: string): Boolean;
@@ -427,13 +430,11 @@ end;
 procedure TIRC.HandleIdException(E: EIdException);
 begin
   MessageBox(E.Message);
-  if not FIdIRC.Connected then
-    Connect;
 end;
 
 procedure TIRC.Connect;
 begin
-  if FIdIRC.Connected then
+  if IsConnected then
      Disconnect;
 
   ConfigureEvents;
@@ -444,7 +445,7 @@ end;
 
 procedure TIRC.Disconnect;
 begin
-  if not FIdIRC.Connected then
+  if not IsConnected then
     Exit;
 
   // It's necessary to remove the event handlers or
@@ -506,7 +507,7 @@ end;
 constructor TIRC.Create;
 begin
   inherited;
-  ConfigureIdIRC;
+  FIdIRC := TIdIRC.Create(nil);
   FCommands := TIRCCommand.Create;
 end;
 
