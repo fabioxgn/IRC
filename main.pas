@@ -262,13 +262,6 @@ end;
 procedure TMainForm.FormWindowStateChange(Sender: TObject);
 begin
   AutoScroll := WindowState <> wsMinimized;
-
-  if WindowState = wsMinimized then
-  begin
-    Hide;
-    WindowState := wsNormal;
-    ShowInTaskBar := stNever;
-  end;
 end;
 
 procedure TMainForm.OnMessageReceived(const Channel, Message: string);
@@ -458,7 +451,11 @@ begin
     Application.Restore;
   end
   else
+  begin
     Application.Minimize;
+    Hide;
+    ShowInTaskBar := stNever;
+  end;
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
