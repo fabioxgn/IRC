@@ -26,7 +26,6 @@ type
     ActionConnect: TAction;
     ActionDisconnect: TAction;
     ActionList: TActionList;
-    ApplicationProperties: TApplicationProperties;
     EditFilter: TEdit;
     EditInput: TEdit;
     MainMenu: TMainMenu;
@@ -61,7 +60,6 @@ type
     procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionExitExecute(Sender: TObject);
     procedure ActionJoinChannelExecute(Sender: TObject);
-    procedure ApplicationPropertiesException(Sender: TObject; E: Exception);
     procedure EditFilterKeyDown(Sender: TObject; var Key: Word;
      Shift: TShiftState);
     procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
@@ -153,17 +151,6 @@ begin
 	  Exit;
 
   FIRC.JoinChannel(Channel);
-end;
-
-procedure TMainForm.ApplicationPropertiesException(Sender: TObject; E: Exception);
-begin
-  if E.ClassName = 'EIdConnClosedGracefully' then
-  begin
-    FIRC.Disconnect;
-    FIRC.Connect
-  end
-  else
-    MessageDlg('Error', E.Message, TMsgDlgType.mtError, [mbOK], 0);
 end;
 
 procedure TMainForm.EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -264,11 +251,6 @@ end;
 
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
-  // We remove the exeption handling at this point
-  // in case of exception in the disconnect process
-  // we don't want the form to handle it
-  // we just want to close and go home :P
-  ApplicationProperties.OnException := nil;
   FIRC.Disconnect;
 end;
 

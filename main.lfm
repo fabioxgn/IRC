@@ -4504,11 +4504,6 @@ object MainForm: TMainForm
     left = 457
     top = 330
   end
-  object ApplicationProperties: TApplicationProperties
-    OnException = ApplicationPropertiesException
-    left = 312
-    top = 128
-  end
   object PopupMenuTray: TPopupMenu
     left = 608
     top = 96
