@@ -39,12 +39,11 @@ type
       FOnShowPopup: TOnShowPopup;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
-      procedure ConfigureEncoding;
       procedure ConfigureEvents;
       procedure DoDisconnect;
-      function FormatarMensagem(const NickName, Message: string): string;
+      function FormatMessage(const NickName, Message: string): string;
       function GetUserName: string;
-      function HighlightUserName(const AMessage: String): string;
+      function FormatNickName(const AMessage: String): string;
       function IsInputCommand(const Message: string): Boolean;
       procedure MessageToChannel(const Msg: string);
       procedure MessageReceived(const Channel, Message: string);
@@ -98,7 +97,7 @@ type
 
 implementation
 
-uses IdIRCconfigurator, IdSync, IdGlobal, sysutils;
+uses IdIRCconfigurator, IdSync, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
@@ -120,12 +119,6 @@ begin
  end;
 end;
 
-procedure TIRC.ConfigureEncoding;
-begin
-  FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
-  FIdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.Default;
-end;
-
 procedure TIRC.ConfigureEvents;
 begin
   // Remember to remove the events in the RemoveEvents method
@@ -143,7 +136,7 @@ begin
   FIdIRC.OnQuit := @OnQuit;
 end;
 
-function TIRC.FormatarMensagem(const NickName, Message: string): string;
+function TIRC.FormatMessage(const NickName, Message: string): string;
 begin
   Result := Format(MessageFormat, [FormatDateTime(ShortTimeFormat, Now), NickName, Message]);
 end;
@@ -153,7 +146,7 @@ begin
   Result := FIdIRC.UsedNickname;
 end;
 
-function TIRC.HighlightUserName(const AMessage: String): string;
+function TIRC.FormatNickName(const AMessage: String): string;
 begin
   Result := StringReplace(AMessage, UserName, Format(NickNameFormat, [UserName]), [])
 end;
@@ -182,7 +175,6 @@ begin
 
   for I := 0 to FAutoJoinChannels.Count -1 do
     Join(FAutoJoinChannels.ValueFromIndex[I]);
-  FreeAndNil(FAutoJoinChannels);
 end;
 
 procedure TIRC.MessageToChannel(const Msg: string);
@@ -191,7 +183,7 @@ var
 begin
   Channel := RemoveOPVoicePrefix(FActiveChannel);
   Say(Channel, Msg);
-  MessageReceived(FActiveChannel, FormatarMensagem(UserName, Msg))
+  MessageReceived(FActiveChannel, FormatMessage(UserName, Msg))
 end;
 
 procedure TIRC.MessageReceived(const Channel, Message: string);
@@ -228,7 +220,6 @@ end;
 
 procedure TIRC.OnMOTD(ASender: TIdContext; AMOTD: TStrings);
 begin
-
   FServerMessages := AMOTD;
   TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
@@ -245,8 +236,8 @@ procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATa
 var
   Mensagem: string;
 begin
-  Mensagem := HighlightUserName(AMessage);
-  Mensagem := FormatarMensagem(ANickname, Mensagem);
+  Mensagem := FormatNickName(AMessage);
+  Mensagem := FormatMessage(ANickname, Mensagem);
 
   if ATarget <> UserName then
     MessageReceived(ATarget, Mensagem)
@@ -367,6 +358,7 @@ begin
   if FServerMessage <> '' then
     FLog.Add(FServerMessage);
 
+  //TODO: Must copy the messages, not use the TStrings from indy
   FServerMessages := nil;
   FServerMessage := '';
 end;
@@ -424,7 +416,7 @@ begin
 	TIdIRCConfigurador.Configure(FIdIRC, FAutoJoinChannels);
  	DoConnect;
   AutoJoinChannels;
-  ConfigureEncoding;
+  TIdIRCConfigurador.ConfigureEncoding(FIdIRC);
 end;
 
 procedure TIRC.Disconnect;
@@ -475,7 +467,7 @@ begin
   begin
     RawString := Message;
     if IsCommand then
-       RawString := FCommands.GetRawCommand(RawString);
+    	RawString := FCommands.GetRawCommand(RawString);
 
     Raw(RawString);
   end

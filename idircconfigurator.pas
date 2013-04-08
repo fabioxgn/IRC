@@ -13,11 +13,12 @@ type
 
  TIdIRCConfigurador = class
     class procedure Configure(IdIRC: TIdIRC; AutoJoinChannels: TStrings);
+    class procedure ConfigureEncoding(IdIRC: TIdIRC);
   end;
 
 implementation
 
-uses config;
+uses config, IdGlobal;
 
 { TIdIRCConfigurador }
 
@@ -36,10 +37,17 @@ begin
     IdIRC.RealName:= C.RealName;
     IdIRC.AltNickname := C.AltNickname;
 
+    AutoJoinChannels.Clear;
     AutoJoinChannels.AddStrings(C.Channels);
   finally
     C.Free;
   end;
+end;
+
+class procedure TIdIRCConfigurador.ConfigureEncoding(IdIRC: TIdIRC);
+begin
+  IdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
+  IdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.Default;
 end;
 
 end.
