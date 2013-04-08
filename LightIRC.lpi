@@ -129,9 +129,9 @@
         <UnitName Value="TreeviewHelper"/>
       </Unit5>
       <Unit6>
-        <Filename Value="idircconfigurator.pas"/>
+        <Filename Value="idircconfig.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="IdIRCconfigurator"/>
+        <UnitName Value="idircconfig"/>
       </Unit6>
     </Units>
   </ProjectOptions>

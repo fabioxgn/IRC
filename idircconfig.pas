@@ -1,4 +1,4 @@
-unit IdIRCconfigurator;
+unit idircconfig;
 
 {$mode objfpc}{$H+}
 
@@ -9,9 +9,9 @@ uses
 
 type
 
-{ TIdIRCConfigurador }
+{ TIdIRCConfig }
 
- TIdIRCConfigurador = class
+ TIdIRCConfig = class
     class procedure Configure(IdIRC: TIdIRC; AutoJoinChannels: TStrings);
     class procedure ConfigureEncoding(IdIRC: TIdIRC);
   end;
@@ -20,9 +20,9 @@ implementation
 
 uses config, IdGlobal;
 
-{ TIdIRCConfigurador }
+{ TIdIRCConfig }
 
-class procedure TIdIRCConfigurador.Configure(IdIRC: TIdIRC; AutoJoinChannels: TStrings);
+class procedure TIdIRCConfig.Configure(IdIRC: TIdIRC; AutoJoinChannels: TStrings);
 var
   C: TIRCConfig;
 begin
@@ -44,7 +44,7 @@ begin
   end;
 end;
 
-class procedure TIdIRCConfigurador.ConfigureEncoding(IdIRC: TIdIRC);
+class procedure TIdIRCConfig.ConfigureEncoding(IdIRC: TIdIRC);
 begin
   IdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
   IdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.Default;

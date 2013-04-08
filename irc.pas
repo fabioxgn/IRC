@@ -97,7 +97,7 @@ type
 
 implementation
 
-uses IdIRCconfigurator, IdSync, sysutils;
+uses idircconfig, IdSync, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
@@ -413,10 +413,10 @@ begin
      Disconnect;
 
   ConfigureEvents;
-	TIdIRCConfigurador.Configure(FIdIRC, FAutoJoinChannels);
+	TIdIRCConfig.Configure(FIdIRC, FAutoJoinChannels);
  	DoConnect;
   AutoJoinChannels;
-  TIdIRCConfigurador.ConfigureEncoding(FIdIRC);
+  TIdIRCConfig.ConfigureEncoding(FIdIRC);
 end;
 
 procedure TIRC.Disconnect;
