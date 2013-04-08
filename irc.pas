@@ -41,7 +41,6 @@ type
       FCommands: TIRCCommand;
       procedure ConfigureEncoding;
       procedure ConfigureEvents;
-      procedure ConfigureIdIRC;
       procedure DoDisconnect;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetUserName: string;
@@ -50,7 +49,6 @@ type
       procedure MessageToChannel(const Msg: string);
       procedure MessageReceived(const Channel, Message: string);
       procedure Raw(const RawString: string);
-      procedure ReadConfig;
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
       procedure OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
       procedure OnMOTD(ASender: TIdContext; AMOTD: TStrings);
@@ -100,7 +98,7 @@ type
 
 implementation
 
-uses config, IdSync, IdGlobal, sysutils;
+uses IdIRCconfigurator, IdSync, IdGlobal, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
@@ -111,33 +109,6 @@ resourcestring
 const
   NickNameFormat = '<%s>';
   MessageFormat = '%s ' + NickNameFormat + ': %s';
-
-procedure TIRC.ReadConfig;
-var
-  C: TIRCConfig;
-begin
-  C := TIRCConfig.Create;
-  try
-    C.Load;
-
-    FIdIRC.Host := C.Host;
-    FIdIRC.Port := C.Port;
-    FIdIRC.Username:= C.Username;
-    FIdIRC.Nickname:= C.Nickname;
-    FIdIRC.RealName:= C.RealName;
-    FIdIRC.AltNickname := C.AltNickname;
-
-    FAutoJoinChannels := TStringList.Create;
-    FAutoJoinChannels.AddStrings(C.Channels);
-  finally
-    C.Free;
-  end;
-end;
-
-procedure TIRC.ConfigureIdIRC;
-begin
-
-end;
 
 procedure TIRC.DoDisconnect;
 begin
@@ -450,8 +421,8 @@ begin
      Disconnect;
 
   ConfigureEvents;
-  ReadConfig;
-  DoConnect;
+	TIdIRCConfigurador.Configure(FIdIRC, FAutoJoinChannels);
+ 	DoConnect;
   AutoJoinChannels;
   ConfigureEncoding;
 end;
@@ -517,6 +488,7 @@ begin
   inherited;
   FIdIRC := TIdIRC.Create(nil);
   FCommands := TIRCCommand.Create;
+  FAutoJoinChannels := TStringList.Create;
 end;
 
 destructor TIRC.Destroy;
@@ -528,4 +500,4 @@ begin
 end;
 
 end.
-
+
