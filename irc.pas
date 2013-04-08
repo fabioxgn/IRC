@@ -42,6 +42,7 @@ type
       procedure ConfigureEncoding;
       procedure ConfigureEvents;
       procedure ConfigureIdIRC;
+      procedure DoDisconnect;
       function FormatarMensagem(const NickName, Message: string): string;
       function GetUserName: string;
       function HighlightUserName(const AMessage: String): string;
@@ -138,6 +139,16 @@ begin
 
 end;
 
+procedure TIRC.DoDisconnect;
+begin
+ try
+   FIdIRC.Disconnect(False);
+   FIdIRC.IOHandler.InputBuffer.Clear;
+ except
+   //We just ignore everything at this point and hope for the best
+ end;
+end;
+
 procedure TIRC.ConfigureEncoding;
 begin
   FIdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
@@ -181,6 +192,7 @@ begin
   try
     Result := FIdIRC.Connected;
   except
+    DoDisconnect; //Must not call the Disconnect method, it can call IsConnected again
     Result := False;
   end;
 end;
@@ -440,6 +452,7 @@ begin
   ConfigureEvents;
   ReadConfig;
   DoConnect;
+  AutoJoinChannels;
   ConfigureEncoding;
 end;
 
@@ -458,12 +471,7 @@ begin
   sleep(500); //Issue #18 - The thread deadlocks if we don't wait >(
   {$ENDIF}
 
-  try
-    FIdIRC.Disconnect(False);
-    FIdIRC.IOHandler.InputBuffer.Clear;
-  except
-    //We just ignore everything at this point and hope for the best
-  end;
+  DoDisconnect;
 end;
 
 procedure TIRC.Join(const Name: string);
