@@ -1831,11 +1831,11 @@ var
 begin
   if Assigned(FOnTopic) then
   begin
-    if ASender.Params.Count > 0 then begin
-      LChannel := ASender.Params[0];
+    if ASender.Params.Count > 1 then begin
+      LChannel := ASender.Params[1]; //patch: Params[0] is the user's nickname
     end;
-    if (ASender.CommandHandler.Command <> '331') and (ASender.Params.Count > 1) then begin {do not localize}
-      LTopic := ASender.Params[1];
+    if (ASender.CommandHandler.Command <> '331') and (ASender.Params.Count > 2) then begin {do not localize}
+      LTopic := ASender.Params[2]; //patch: Params[2] is the current topic
     end else begin
       LTopic := '';
     end;
