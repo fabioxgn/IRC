@@ -101,9 +101,11 @@ type
     procedure OnUserQuit(const NickName: string);
     procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
     procedure OnChannelJoined(const ChannelName: string);
+    procedure OnNickNameChanged(const OldNickName, NewNickName: string);
+    procedure OnUpdateTabCaption(Tab: TObject; ACaption: string);
+    procedure OnUpdateNodeText(Node: TObject; AText: string);
     procedure RemoveChannelFromList(const Channel: string);
-    procedure RemoveNickFromChannelList(const Nick: string;
-      const ChannelName: string);
+    procedure RemoveNickFromChannelList(const Nick: string; const ChannelName: string);
     procedure OnShowPopup(const Msg: string);
     function GetTabByName(const Channel: string): TTabSheet;
     function NewChannelTab(const Channel: string): TTabSheet;
@@ -315,6 +317,21 @@ begin
 
   AddChannelToTree(Channel);
   SetFocusEditInput;
+end;
+
+procedure TMainForm.OnNickNameChanged(const OldNickName, NewNickName: string);
+begin
+	FChannelList.NickNameChanged(OldNickName, NewNickName);
+end;
+
+procedure TMainForm.OnUpdateTabCaption(Tab: TObject; ACaption: string);
+begin
+	(Tab as TTabSheet).Caption := ACaption;
+end;
+
+procedure TMainForm.OnUpdateNodeText(Node: TObject; AText: string);
+begin
+	(Node as TTreeNode).Text := AText;
 end;
 
 procedure TMainForm.MostrarConfig;
@@ -635,6 +652,8 @@ begin
   TrayIcon.AnimateInterval := 1250;
 
   FChannelList := TChannelList.Create;
+  FChannelList.OnUpdateTabCaption := @OnUpdateTabCaption;
+  FChannelList.OnUpdateNodeText := @OnUpdateNodeText;
 
   FIRC := TIRC.Create;
   FIRC.OnMessageReceived := @OnMessageReceived;
@@ -644,6 +663,7 @@ begin
   FIRC.OnChannelJoined := @OnChannelJoined;
   FIRC.OnUserQuit := @OnUserQuit;
   FIRC.OnShowPopup := @OnShowPopup;
+  FIRC.OnNickChanged := @OnNickNameChanged;
 
   ConfigureMemo(MemoServidor);
   SetColors;

@@ -11,23 +11,19 @@ type
 
   { TUser }
 
-  TOnUpdateTabCaption = procedure(Tab: TObject; Caption: string) of object;
-  TOnUpdateNodeCaption = procedure(Node: TObject; Caption: string) of object;
+  TOnUpdateTabCaption = procedure(Tab: TObject; ACaption: string) of object;
+  TOnUpdateNodeText = procedure(Node: TObject; AText: string) of object;
 
   TUser = class
   private
     FNick: string;
     FDisplayNick: string;
-    FOnUpdateTabCaption: TOnUpdateTabCaption;
-    FOnUpdateNodeCaption: TOnUpdateNodeCaption;
     procedure SetNick(AValue: string);
   public
     Tab: TObject;
     Node: TObject;
     property Nick: string read FNick write SetNick;
     property DisplayNick: string read FDisplayNick;
-    property OnUpdateTabCaption: TOnUpdateTabCaption read FOnUpdateTabCaption write FOnUpdateTabCaption;
-    property OnUpdateNodeCaption: TOnUpdateNodeCaption read FOnUpdateNodeCaption write FOnUpdateNodeCaption;
     constructor Create(const NickName: string);
   end;
 
@@ -40,6 +36,7 @@ type
   { TChannel }
 
   TChannel = class
+  public
     Name: string;
     Tab: TObject;
     Node: TObject;
@@ -51,12 +48,17 @@ type
   { TChannelList }
 
   TChannelList = class(specialize TFPGObjectList<TChannel>)
+  private
+    FOnUpdateTabCaption: TOnUpdateTabCaption;
+    FOnUpdateNodeText: TOnUpdateNodeText;
+  public
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
+    property OnUpdateTabCaption: TOnUpdateTabCaption read FOnUpdateTabCaption write FOnUpdateTabCaption;
+    property OnUpdateNodeText: TOnUpdateNodeText read FOnUpdateNodeText write FOnUpdateNodeText;
   end;
-
 
 
 implementation
@@ -153,11 +155,11 @@ begin
 			begin
 				User.Nick := NewNickName;
 
-				if Assigned(User.OnUpdateTabCaption) then
-					User.OnUpdateTabCaption(User.Tab, NewNickName);
+				if (User.Tab <> nil) and Assigned(@OnUpdateTabCaption) then
+					OnUpdateTabCaption(User.Tab, NewNickName);
 
-				if Assigned(User.OnUpdateNodeCaption) then
-					User.OnUpdateNodeCaption(User.Node, NewNickName);
+				if (User.Node <> nil) and Assigned(@OnUpdateNodeText) then
+					OnUpdateNodeText(User.Node, NewNickName);
       end;
 end;
 

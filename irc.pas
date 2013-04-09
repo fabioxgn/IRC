@@ -17,7 +17,7 @@ type
     TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
     TOnShowPopup = procedure(const Msg: string) of object;
-    TOnNickNameChanged = procedure(const OldNickName, NewNickName: string);
+    TOnNickNameChanged = procedure(const OldNickName, NewNickName: string) of object;
 
     TIRC = class
     private
@@ -38,7 +38,7 @@ type
       FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
-      FOnNickNameChanged: TOnNickNameChanged;
+      FOnNickChanged: TOnNickNameChanged;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       FOwnMessage: Boolean;
@@ -92,7 +92,7 @@ type
       property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
-      property OnNickNameChanged: TOnNickNameChanged read FOnNickNameChanged write FOnNickNameChanged;
+      property OnNickChanged: TOnNickNameChanged read FOnNickChanged write FOnNickChanged;
       property NickName: string read GetNickName;
       property HostName: string read GetHostName;
       procedure AutoJoinChannels;
@@ -146,7 +146,7 @@ begin
   FIdIRC.OnRaw := @OnRaw;
   FIdIRC.OnQuit := @OnQuit;
   FIdIRC.OnTopic := @OnTopic;
-  FIdIRC.OnNicknameChange := ;
+  FIdIRC.OnNicknameChange := @OnNickNameChanged;
 end;
 
 function TIRC.FormatMessage(const NickName, Message: string): string;
@@ -413,7 +413,7 @@ end;
 
 procedure TIRC.SendNickNameChanged;
 begin
-  FOnNickNameChanged(FOldNickName, FNewNickName);
+  FOnNickChanged(FOldNickName, FNewNickName);
 end;
 
 procedure TIRC.DoConnect;
