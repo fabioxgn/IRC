@@ -11,16 +11,23 @@ type
 
   { TUser }
 
+  TOnUpdateTabCaption = procedure(Tab: TObject; Caption: string) of object;
+  TOnUpdateNodeCaption = procedure(Node: TObject; Caption: string) of object;
+
   TUser = class
   private
     FNick: string;
     FDisplayNick: string;
+    FOnUpdateTabCaption: TOnUpdateTabCaption;
+    FOnUpdateNodeCaption: TOnUpdateNodeCaption;
     procedure SetNick(AValue: string);
   public
     Tab: TObject;
     Node: TObject;
     property Nick: string read FNick write SetNick;
     property DisplayNick: string read FDisplayNick;
+    property OnUpdateTabCaption: TOnUpdateTabCaption read FOnUpdateTabCaption write FOnUpdateTabCaption;
+    property OnUpdateNodeCaption: TOnUpdateNodeCaption read FOnUpdateNodeCaption write FOnUpdateNodeCaption;
     constructor Create(const NickName: string);
   end;
 
@@ -47,6 +54,7 @@ type
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
+    procedure NickNameChanged(const OldNickName, NewNickName: string);
   end;
 
 
@@ -132,6 +140,25 @@ begin
      Channel.Users.Extract(User).Free;
    end;
  end;
+end;
+
+procedure TChannelList.NickNameChanged(const OldNickName, NewNickName: string);
+var
+ User: TUser;
+ Channel: TChannel;
+begin
+	for Channel in Self do
+		for User in Channel.Users do
+			if User.Nick = OldNickName then
+			begin
+				User.Nick := NewNickName;
+
+				if Assigned(User.OnUpdateTabCaption) then
+					User.OnUpdateTabCaption(User.Tab, NewNickName);
+
+				if Assigned(User.OnUpdateNodeCaption) then
+					User.OnUpdateNodeCaption(User.Node, NewNickName);
+      end;
 end;
 
 end.

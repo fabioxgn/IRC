@@ -17,6 +17,7 @@ type
     TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
     TOnShowPopup = procedure(const Msg: string) of object;
+    TOnNickNameChanged = procedure(const OldNickName, NewNickName: string);
 
     TIRC = class
     private
@@ -37,9 +38,12 @@ type
       FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
+      FOnNickNameChanged: TOnNickNameChanged;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       FOwnMessage: Boolean;
+      FOldNickName: string;
+      FNewNickName: string;
       procedure ConfigureEvents;
       procedure DoDisconnect;
       function FormatMessage(const NickName, Message: string): string;
@@ -53,14 +57,15 @@ type
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
       procedure OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
       procedure OnMOTD(ASender: TIdContext; AMOTD: TStrings);
-      procedure OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
-      procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
-      procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
-      procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
-      procedure OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
-      procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
-      procedure OnWelcome(ASender: TIdContext; const AMsg: String);
-      procedure OnTopic(ASender: TIdContext; const ANickname, AHost, AChannel, ATopic: String);
+      procedure OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: string);
+      procedure OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: string);
+      procedure OnNickNameListReceive(ASender: TIdContext; const AChannel: string; ANicknameList: TStrings);
+      procedure OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: string);
+      procedure OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: string);
+      procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: string);
+      procedure OnWelcome(ASender: TIdContext; const AMsg: string);
+      procedure OnTopic(ASender: TIdContext; const ANickname, AHost, AChannel, ATopic: string);
+      procedure OnNickNameChanged(ASender: TIdContext; const AOldNickname, AHost, ANewNickname: string);
       procedure RemoveEvents;
       function RemoveOPVoicePrefix(const Channel: string): string;
       procedure Say(const Channel, Msg: string);
@@ -72,6 +77,7 @@ type
       procedure SendServerMessage; overload;
       procedure SendServerMessage(const Msg: string); overload;
       procedure SendUserJoined;
+			procedure SendNickNameChanged;
       procedure DoConnect;
       procedure MessageBox(const Msg: string);
       procedure HandleIdException(E: EIdException);
@@ -86,6 +92,7 @@ type
       property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
+      property OnNickNameChanged: TOnNickNameChanged read FOnNickNameChanged write FOnNickNameChanged;
       property NickName: string read GetNickName;
       property HostName: string read GetHostName;
       procedure AutoJoinChannels;
@@ -139,6 +146,7 @@ begin
   FIdIRC.OnRaw := @OnRaw;
   FIdIRC.OnQuit := @OnQuit;
   FIdIRC.OnTopic := @OnTopic;
+  FIdIRC.OnNicknameChange := ;
 end;
 
 function TIRC.FormatMessage(const NickName, Message: string): string;
@@ -313,6 +321,13 @@ begin
   TIdSync.SynchronizeMethod(@SendMessage);
 end;
 
+procedure TIRC.OnNickNameChanged(ASender: TIdContext; const AOldNickname, AHost, ANewNickname: string);
+begin
+  FOldNickName := AOldNickname;
+  FNewNickName := ANewNickname;
+  TIdSync.SynchronizeMethod(@SendNickNameChanged);
+end;
+
 procedure TIRC.RemoveEvents;
 begin
   FIdIRC.OnStatus := nil;
@@ -326,6 +341,7 @@ begin
   FIdIRC.OnRaw := nil;
   FIdIRC.OnQuit := nil;
   FIdIRC.OnTopic := nil;
+  FIdIRC.OnNicknameChange := nil;
 end;
 
 function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
@@ -393,6 +409,11 @@ end;
 procedure TIRC.SendUserJoined;
 begin
   FOnUserJoined(FChannel, FNickname);
+end;
+
+procedure TIRC.SendNickNameChanged;
+begin
+  FOnNickNameChanged(FOldNickName, FNewNickName);
 end;
 
 procedure TIRC.DoConnect;

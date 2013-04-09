@@ -22,6 +22,7 @@ type
     procedure AutoCompleteNickNames;
     procedure ChannelByName;
     procedure UserByNick;
+    procedure NickNameChanged;
   end;
 
 implementation
@@ -107,6 +108,31 @@ begin
   finally
     UserList.Free;
   end;
+end;
+
+procedure TChannelListTests.NickNameChanged;
+var
+ Channel2: TChannel;
+ Channel1: TChannel;
+begin
+ Channel1 := TChannel.Create(StrChannel1);
+ FSUT.Add(Channel1);
+
+ Channel2 := TChannel.Create(StrChannel2);
+ FSUT.Add(Channel2);
+
+ Channel1.Users.Add(TUser.Create('User1'));
+ Channel1.Users.Add(TUser.Create('User2'));
+ Channel2.Users.Add(TUser.Create('User3'));
+ Channel2.Users.Add(TUser.Create('User4'));
+
+ FSUT.NickNameChanged('User2', 'User22');
+ FSUT.NickNameChanged('User3', 'User33');
+
+ CheckEquals('User1', Channel1.Users.Items[0].Nick);
+ CheckEquals('User22', Channel1.Users.Items[1].Nick);
+ CheckEquals('User33', Channel2.Users.Items[0].Nick);
+ CheckEquals('User4', Channel2.Users.Items[1].Nick);
 end;
 
 initialization
