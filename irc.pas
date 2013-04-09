@@ -112,7 +112,6 @@ resourcestring
   StrJoined = '* Joined: ';
   StrParted = '* Parted: ';
   StrQuit = '* %s %s';
-  StrAlreadyConnected = 'Alread connected to %s. Disconnect first.';
 
 const
   NickNameFormat = '<%s>';
@@ -270,8 +269,6 @@ begin
 end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
-var
-  Topic: string;
 begin
   if ANickname = FIdIRC.UsedNickname then
   begin
