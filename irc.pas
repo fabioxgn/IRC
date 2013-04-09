@@ -58,6 +58,7 @@ type
       procedure OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
       procedure OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
       procedure OnWelcome(ASender: TIdContext; const AMsg: String);
+      procedure OnTopic(ASender: TIdContext; const ANickname, AHost, AChannel, ATopic: String);
       procedure RemoveEvents;
       function RemoveOPVoicePrefix(const Channel: string): string;
       procedure Say(const Channel, Msg: string);
@@ -134,6 +135,7 @@ begin
   FIdIRC.OnServerWelcome := @OnWelcome;
   FIdIRC.OnRaw := @OnRaw;
   FIdIRC.OnQuit := @OnQuit;
+  FIdIRC.OnTopic := @OnTopic;
 end;
 
 function TIRC.FormatMessage(const NickName, Message: string): string;
@@ -253,6 +255,8 @@ begin
 end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
+var
+  Topic: string;
 begin
   if ANickname = FIdIRC.UsedNickname then
   begin
@@ -293,6 +297,13 @@ begin
   TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
+procedure TIRC.OnTopic(ASender: TIdContext; const ANickname, AHost, AChannel, ATopic: String);
+begin
+  FChannel := AChannel;
+  FMessage := ATopic + sLineBreak;
+  TIdSync.SynchronizeMethod(@SendMessage);
+end;
+
 procedure TIRC.RemoveEvents;
 begin
   FIdIRC.OnStatus := nil;
@@ -305,6 +316,7 @@ begin
   FIdIRC.OnServerWelcome := nil;
   FIdIRC.OnRaw := nil;
   FIdIRC.OnQuit := nil;
+  FIdIRC.OnTopic := nil;
 end;
 
 function TIRC.RemoveOPVoicePrefix(const Channel: string): string;
@@ -492,4 +504,4 @@ begin
 end;
 
 end.
-
+
