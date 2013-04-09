@@ -6,13 +6,13 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, IRC, ChannelList, sysutils;
+  ExtCtrls, LCLIntf, LMessages, LCLType, IRC, ChannelList, sysutils, IRCViewIntf;
 
 type
 
   { TMainForm }
 
-  TMainForm = class(TForm)
+  TMainForm = class(TForm, IIRCView)
     ActionExit: TAction;
     ActionCloseChannel: TAction;
     ActionCloseTab: TAction;
@@ -101,9 +101,8 @@ type
     procedure OnUserQuit(const NickName: string);
     procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
     procedure OnChannelJoined(const ChannelName: string);
-    procedure OnNickNameChanged(const OldNickName, NewNickName: string);
-    procedure OnUpdateTabCaption(Tab: TObject; ACaption: string);
-    procedure OnUpdateNodeText(Node: TObject; AText: string);
+    procedure UpdateNodeText(Node: TObject; AText: string);
+    procedure UpdateTabCaption(Tab: TObject; ACaption: string);
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveNickFromChannelList(const Nick: string; const ChannelName: string);
     procedure OnShowPopup(const Msg: string);
@@ -319,17 +318,12 @@ begin
   SetFocusEditInput;
 end;
 
-procedure TMainForm.OnNickNameChanged(const OldNickName, NewNickName: string);
+procedure TMainForm.UpdateTabCaption(Tab: TObject; ACaption: string);
 begin
-	FChannelList.NickNameChanged(OldNickName, NewNickName);
+  (Tab as TTabSheet).Caption := ACaption;
 end;
 
-procedure TMainForm.OnUpdateTabCaption(Tab: TObject; ACaption: string);
-begin
-	(Tab as TTabSheet).Caption := ACaption;
-end;
-
-procedure TMainForm.OnUpdateNodeText(Node: TObject; AText: string);
+procedure TMainForm.UpdateNodeText(Node: TObject; AText: string);
 begin
 	(Node as TTreeNode).Text := AText;
 end;
@@ -651,11 +645,9 @@ begin
   TrayIcon.Icons := ImageListTrayIcons;
   TrayIcon.AnimateInterval := 1250;
 
-  FChannelList := TChannelList.Create;
-  FChannelList.OnUpdateTabCaption := @OnUpdateTabCaption;
-  FChannelList.OnUpdateNodeText := @OnUpdateNodeText;
+  FChannelList := TChannelList.Create(Self);
 
-  FIRC := TIRC.Create;
+  FIRC := TIRC.Create(FChannelList);
   FIRC.OnMessageReceived := @OnMessageReceived;
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
@@ -663,7 +655,6 @@ begin
   FIRC.OnChannelJoined := @OnChannelJoined;
   FIRC.OnUserQuit := @OnUserQuit;
   FIRC.OnShowPopup := @OnShowPopup;
-  FIRC.OnNickChanged := @OnNickNameChanged;
 
   ConfigureMemo(MemoServidor);
   SetColors;

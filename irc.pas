@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList;
 
 type
 
@@ -17,10 +17,10 @@ type
     TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
     TOnShowPopup = procedure(const Msg: string) of object;
-    TOnNickNameChanged = procedure(const OldNickName, NewNickName: string) of object;
 
     TIRC = class
     private
+      FChannelList: TChannelList;
       FReady: Boolean;
       FChannel: string;
       FMessage: string;
@@ -38,7 +38,6 @@ type
       FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
-      FOnNickChanged: TOnNickNameChanged;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
       FOwnMessage: Boolean;
@@ -92,7 +91,6 @@ type
       property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
-      property OnNickChanged: TOnNickNameChanged read FOnNickChanged write FOnNickChanged;
       property NickName: string read GetNickName;
       property HostName: string read GetHostName;
       procedure AutoJoinChannels;
@@ -102,7 +100,7 @@ type
       procedure Join(const Name: string);
       procedure Part(const Name: string);
       procedure SendMessage(const Message: string);
-      constructor Create;
+      constructor Create(ChannelList: TChannelList);
       destructor Destroy; override;
     end;
 
@@ -413,7 +411,7 @@ end;
 
 procedure TIRC.SendNickNameChanged;
 begin
-  FOnNickChanged(FOldNickName, FNewNickName);
+  FChannelList.NickNameChanged(FOldNickName, FNewNickName);
 end;
 
 procedure TIRC.DoConnect;
@@ -517,9 +515,10 @@ begin
     MessageToChannel(Message);
 end;
 
-constructor TIRC.Create;
+constructor TIRC.Create(ChannelList: TChannelList);
 begin
-  inherited;
+  inherited Create;
+  FChannelList := ChannelList;
   FIdIRC := TIdIRC.Create(nil);
   FCommands := TIRCCommand.Create;
   FAutoJoinChannels := TStringList.Create;

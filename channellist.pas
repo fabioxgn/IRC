@@ -5,14 +5,11 @@ unit ChannelList;
 interface
 
 uses
-  Classes, SysUtils, fgl;
+  Classes, SysUtils, fgl, IRCViewIntf;
 
 type
 
   { TUser }
-
-  TOnUpdateTabCaption = procedure(Tab: TObject; ACaption: string) of object;
-  TOnUpdateNodeText = procedure(Node: TObject; AText: string) of object;
 
   TUser = class
   private
@@ -49,15 +46,13 @@ type
 
   TChannelList = class(specialize TFPGObjectList<TChannel>)
   private
-    FOnUpdateTabCaption: TOnUpdateTabCaption;
-    FOnUpdateNodeText: TOnUpdateNodeText;
+    FView: IIRCView;
   public
+    constructor Create(View: IIRCView);
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
-    property OnUpdateTabCaption: TOnUpdateTabCaption read FOnUpdateTabCaption write FOnUpdateTabCaption;
-    property OnUpdateNodeText: TOnUpdateNodeText read FOnUpdateNodeText write FOnUpdateNodeText;
   end;
 
 
@@ -107,6 +102,12 @@ end;
 
 { TChannelList }
 
+constructor TChannelList.Create(View: IIRCView);
+begin
+  inherited Create;
+	FView := View;
+end;
+
 function TChannelList.AutoComplete(const ChannelName: string; const SearchString: string): string;
 var
   User: TUser;
@@ -155,11 +156,11 @@ begin
 			begin
 				User.Nick := NewNickName;
 
-				if (User.Tab <> nil) and Assigned(@OnUpdateTabCaption) then
-					OnUpdateTabCaption(User.Tab, NewNickName);
+				if (User.Tab <> nil) then
+					FView.UpdateTabCaption(User.Tab, NewNickName);
 
-				if (User.Node <> nil) and Assigned(@OnUpdateNodeText) then
-					OnUpdateNodeText(User.Node, NewNickName);
+        if (User.Node <> nil) then
+					FView.UpdateNodeText(User.Node, NewNickName);
       end;
 end;
 

@@ -9,7 +9,8 @@ uses
   cmem,
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
-  Forms, Main, IRC, config, ConfigForm, TreeViewHelper, idircconfig;
+  Forms, Main, IRC, config, ConfigForm, TreeViewHelper, idircconfig, 
+IRCViewIntf;
 
 {$R *.res}
 
