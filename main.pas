@@ -110,7 +110,6 @@ type
     function NewChannelTab(const Channel: string): TTabSheet;
     procedure SelectChannelTab;
     procedure SetFocusEditInput;
-    procedure OnApplicationMinimize(Sender: TObject);
     procedure StopTrayIconAnimation;
   public
     constructor Create(TheOwner: TComponent); override;
@@ -489,13 +488,10 @@ end;
 procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
   StopTrayIconAnimation;
-  if not Visible then
-  begin
-    Show;
-    Application.Restore
-  end
-  else
-    Application.Minimize;
+  if WindowState = wsMinimized then
+  	Application.Restore
+   else
+     Application.Minimize;
 end;
 
 procedure TMainForm.TreeViewUsersDblClick(Sender: TObject);
@@ -583,12 +579,6 @@ begin
 	  EditInput.SetFocus;
 end;
 
-procedure TMainForm.OnApplicationMinimize(Sender: TObject);
-begin
-  Hide;
-  ShowInTaskBar := stNever;
-end;
-
 procedure TMainForm.StopTrayIconAnimation;
 begin
   TrayIcon.Animate := False;
@@ -638,7 +628,6 @@ constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
 
-  Application.OnMinimize := @OnApplicationMinimize;
   Application.OnActivate := @ApplicationActivate;
 
   TrayIcon.Icons := ImageListTrayIcons;
