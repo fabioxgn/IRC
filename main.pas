@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
-  ExtCtrls, LCLIntf, LMessages, LCLType, IRC, ChannelList, sysutils, IRCViewIntf;
+  ExtCtrls, LCLIntf, LCLType, IRC, ChannelList, sysutils, IRCViewIntf;
 
 type
 
@@ -122,8 +122,7 @@ var
 
 implementation
 
-uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper,
- strutils;
+uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper;
 
 {$R *.lfm}
 
