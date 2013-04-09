@@ -8,9 +8,6 @@ uses
   Classes, Forms, Controls, Dialogs, StdCtrls, ComCtrls, Menus, ActnList,
   ExtCtrls, LCLIntf, LMessages, LCLType, IRC, ChannelList, sysutils;
 
-const
-     LM_AFTER_SHOW = LM_USER + 300;
-
 type
 
   { TMainForm }
@@ -28,6 +25,7 @@ type
     ActionList: TActionList;
     EditFilter: TEdit;
     EditInput: TEdit;
+    ImageListTrayIcons: TImageList;
     MainMenu: TMainMenu;
     MemoServidor: TMemo;
     MenuItemExit: TMenuItem;
@@ -68,6 +66,7 @@ type
      Shift: TShiftState);
     procedure EditInputKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure EditInputKeyUp(Sender: TObject; var Key: word; Shift: TShiftState);
+    procedure ApplicationActivate(Sender: TObject);
     procedure FormClose(Sender: TObject; var CloseAction: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure FormWindowStateChange(Sender: TObject);
@@ -100,7 +99,7 @@ type
     procedure OnUserJoined(const ChannelName, Nick: string);
     procedure OnUserParted(const Channel, User: string);
     procedure OnUserQuit(const NickName: string);
-    procedure OnMessageReceived(const Channel, Message: string);
+    procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
     procedure OnChannelJoined(const ChannelName: string);
     procedure RemoveChannelFromList(const Channel: string);
     procedure RemoveNickFromChannelList(const Nick: string;
@@ -110,9 +109,8 @@ type
     function NewChannelTab(const Channel: string): TTabSheet;
     procedure SelectChannelTab;
     procedure SetFocusEditInput;
-    procedure WmAfterShow(var Msg: TLMessage); message LM_AFTER_SHOW;
-    procedure AfterShow;
     procedure OnApplicationMinimize(Sender: TObject);
+    procedure StopTrayIconAnimation;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -127,8 +125,6 @@ uses FileUtil, ConfigForm, config, StringUtils, IRCUtils, TreeviewHelper,
  strutils;
 
 {$R *.lfm}
-
-{ TMainForm }
 
 const
   DefaultFontSize = 11;
@@ -254,6 +250,11 @@ begin
   EditInput.Clear;
 end;
 
+procedure TMainForm.ApplicationActivate(Sender: TObject);
+begin
+  StopTrayIconAnimation;
+end;
+
 procedure TMainForm.FormClose(Sender: TObject; var CloseAction: TCloseAction);
 begin
   FIRC.Disconnect;
@@ -261,7 +262,15 @@ end;
 
 procedure TMainForm.FormShow(Sender: TObject);
 begin
-  PostMessage(Self.Handle, LM_AFTER_SHOW, 0, 0);
+  if FIRC.IsConnected then
+    Exit;
+
+  if not FileExistsUTF8(DefaultConfigFile) then
+    MostrarConfig;
+
+  //Log must be set here, if set in the Create it crashes misteriously
+  FIRC.Log := MemoServidor.Lines;
+  FIRC.Connect;
 end;
 
 procedure TMainForm.FormWindowStateChange(Sender: TObject);
@@ -269,15 +278,24 @@ begin
   AutoScroll := WindowState <> wsMinimized;
 end;
 
-procedure TMainForm.OnMessageReceived(const Channel, Message: string);
+procedure TMainForm.OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
 var
   Tab: TTabSheet;
   Memo: TMemo;
-begin
-  Tab := GetChannelTab(Channel);
 
+ function AnimateTrayIcon: Boolean;
+ begin
+   Result := (not OwnMessage) and ((Channel[1] <> '#') or (Pos(FIRC.NickName, Message) > 0))
+ end;
+
+begin
   if Message = '' then
     Exit;
+
+  if AnimateTrayIcon then
+	  TrayIcon.Animate := True; //Should not toggle, more messages may have triggered this
+
+  Tab := GetChannelTab(Channel);
 
   Memo := Tab.Components[0] as TMemo;
   Memo.Lines.Add(Message);
@@ -296,6 +314,7 @@ begin
   PageControl.ActivePage := Tab;
 
   AddChannelToTree(Channel);
+  SetFocusEditInput;
 end;
 
 procedure TMainForm.MostrarConfig;
@@ -321,6 +340,7 @@ begin
   Memo.BorderStyle := bsSingle;
   Memo.Color := BackGroundColor;
   Memo.Font.Color := FontColor;
+  Memo.Invalidate;
 end;
 
 procedure TMainForm.SetColors;
@@ -450,11 +470,15 @@ end;
 
 procedure TMainForm.TimerConnectionTimer(Sender: TObject);
 begin
-  StatusBar.Panels[0].Text := IfThen(FIRC.IsConnected, 'Connected', 'Disconnected');
+  if FIRC.IsConnected then
+		StatusBar.Panels[0].Text := Format('Connected. %s@%s', [FIRC.NickName, FIRC.HostName])
+  else
+	  StatusBar.Panels[0].Text := 'Disconnected :(';
 end;
 
 procedure TMainForm.TrayIconClick(Sender: TObject);
 begin
+  StopTrayIconAnimation;
   if not Visible then
   begin
     Show;
@@ -546,37 +570,19 @@ end;
 procedure TMainForm.SetFocusEditInput;
 begin
   if EditInput.CanFocus then
-    try
-      EditInput.SetFocus;
-    except
-      on E: EInvalidOperation do; //Even checking for can focus this is crashing on Linux
-    end;
-end;
-
-procedure TMainForm.WmAfterShow(var Msg: TLMessage);
-begin
-  AfterShow;
-end;
-
-procedure TMainForm.AfterShow;
-begin
-  SetFocusEditInput;
-
-  if FIRC.IsConnected then
-    Exit;
-
-  if not FileExistsUTF8(DefaultConfigFile) then
-    MostrarConfig;
-
-  //Log must be set here, if set in the Create it crashes misteriously
-  FIRC.Log := MemoServidor.Lines;
-  FIRC.Connect;
+	  EditInput.SetFocus;
 end;
 
 procedure TMainForm.OnApplicationMinimize(Sender: TObject);
 begin
   Hide;
   ShowInTaskBar := stNever;
+end;
+
+procedure TMainForm.StopTrayIconAnimation;
+begin
+  TrayIcon.Animate := False;
+  TrayIcon.Icon.Assign(Application.Icon);
 end;
 
 procedure TMainForm.OnNickListReceived(const ChannelName: string; List: TStrings);
@@ -602,7 +608,7 @@ end;
 
 procedure TMainForm.OnUserParted(const Channel, User: string);
 begin
-  if User = FIRC.UserName then
+  if User = FIRC.NickName then
     CloseChannel(Channel)
   else
     RemoveNickFromChannelList(User, Channel);
@@ -623,6 +629,10 @@ begin
   inherited Create(TheOwner);
 
   Application.OnMinimize := @OnApplicationMinimize;
+  Application.OnActivate := @ApplicationActivate;
+
+  TrayIcon.Icons := ImageListTrayIcons;
+  TrayIcon.AnimateInterval := 1250;
 
   FChannelList := TChannelList.Create;
 

@@ -15,7 +15,7 @@ type
     TOnNickListReceived = procedure(const Channel: string; List: TStrings) of object;
     TOnUserEvent = procedure(const Channel, User: string) of object;
     TOnUserQuit = procedure(const NickName: string) of object;
-    TOnMessageReceived = procedure(const Channel, Message: string) of object;
+    TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
     TOnShowPopup = procedure(const Msg: string) of object;
 
     TIRC = class
@@ -39,14 +39,16 @@ type
       FOnShowPopup: TOnShowPopup;
       FAutoJoinChannels: TStrings;
       FCommands: TIRCCommand;
+      FOwnMessage: Boolean;
       procedure ConfigureEvents;
       procedure DoDisconnect;
       function FormatMessage(const NickName, Message: string): string;
-      function GetUserName: string;
+      function GetHostName: string;
+      function GetNickName: string;
       function FormatNickName(const AMessage: String): string;
       function IsInputCommand(const Message: string): Boolean;
       procedure MessageToChannel(const Msg: string);
-      procedure MessageReceived(const Channel, Message: string);
+      procedure MessageReceived(const Channel, Message: string; OwnMessage: Boolean);
       procedure Raw(const RawString: string);
       procedure OnStatus(ASender: TObject; const AStatus: TIdStatus; const AStatusText: string);
       procedure OnNotice(ASender: TIdContext; const ANicknameFrom, AHost, ANicknameTo, ANotice: String);
@@ -84,7 +86,8 @@ type
       property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
-      property UserName: string read GetUserName;
+      property NickName: string read GetNickName;
+      property HostName: string read GetHostName;
       procedure AutoJoinChannels;
       function IsConnected: Boolean;
       procedure Connect;
@@ -143,14 +146,19 @@ begin
   Result := Format(MessageFormat, [FormatDateTime(ShortTimeFormat, Now), NickName, Message]);
 end;
 
-function TIRC.GetUserName: string;
+function TIRC.GetHostName: string;
+begin
+  Result := FIdIRC.Host;
+end;
+
+function TIRC.GetNickName: string;
 begin
   Result := FIdIRC.UsedNickname;
 end;
 
 function TIRC.FormatNickName(const AMessage: String): string;
 begin
-  Result := StringReplace(AMessage, UserName, Format(NickNameFormat, [UserName]), [])
+  Result := StringReplace(AMessage, NickName, Format(NickNameFormat, [NickName]), [])
 end;
 
 function TIRC.IsConnected: Boolean;
@@ -185,13 +193,14 @@ var
 begin
   Channel := RemoveOPVoicePrefix(FActiveChannel);
   Say(Channel, Msg);
-  MessageReceived(FActiveChannel, FormatMessage(UserName, Msg))
+  MessageReceived(FActiveChannel, FormatMessage(NickName, Msg), True)
 end;
 
-procedure TIRC.MessageReceived(const Channel, Message: string);
+procedure TIRC.MessageReceived(const Channel, Message: string; OwnMessage: Boolean);
 begin
   FChannel := Channel;
   FMessage := Message;
+  FOwnMessage := OwnMessage;
   TIdSync.SynchronizeMethod(@SendMessage);
 end;
 
@@ -241,10 +250,10 @@ begin
   Mensagem := FormatNickName(AMessage);
   Mensagem := FormatMessage(ANickname, Mensagem);
 
-  if ATarget <> UserName then
-    MessageReceived(ATarget, Mensagem)
+  if ATarget <> NickName then
+    MessageReceived(ATarget, Mensagem, False)
   else
-    MessageReceived(ANickname, Mensagem);
+    MessageReceived(ANickname, Mensagem, False);
 end;
 
 procedure TIRC.OnNickNameListReceive(ASender: TIdContext; const AChannel: String; ANicknameList: TStrings);
@@ -278,7 +287,7 @@ begin
   FNickName := ANickname;
   TIdSync.SynchronizeMethod(@SendParted);
 
-  if ANickname = UserName then
+  if ANickname = NickName then
      Exit;
 
   SendServerMessage(StrParted + ANickname + ' - ' + ' -' + AHost + ': ' + APartMessage + ' - ' + AChannel);
@@ -338,7 +347,7 @@ end;
 
 procedure TIRC.SendMessage;
 begin
-  FOnMessageReceived(FChannel, FMessage);
+  FOnMessageReceived(FChannel, FMessage, FOwnMessage);
 end;
 
 procedure TIRC.SendChannelJoined;

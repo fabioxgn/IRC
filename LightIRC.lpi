@@ -91,7 +91,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="6">
       <Unit0>
         <Filename Value="LightIRC.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -128,11 +128,6 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="TreeviewHelper"/>
       </Unit5>
-      <Unit6>
-        <Filename Value="idircconfig.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="idircconfig"/>
-      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -198,4 +193,4 @@
       </Item7>
     </Exceptions>
   </Debugging>
-</CONFIG>
+</CONFIG>
