@@ -9,9 +9,10 @@ type
 	  procedure UpdateTabCaption(Tab: TObject; ACaption: string);
 	  procedure UpdateNodeText(Node: TObject; AText: string);
     procedure ServerMessage(const AText: string);
+    procedure NotifyChanged;
   end;
 
 implementation
 
 end.
-
+
