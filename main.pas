@@ -85,7 +85,6 @@ type
     procedure AddNicksToChannel(const Channel: TChannel; const List: TStrings);
     procedure AddNicksToTreeView(const Channel: TChannel);
     procedure AddUserToTreeView(const User: TUser; const Channel: TChannel);
-    procedure CloseChannel(const ChannelName: string);
     procedure ConfigureMemo(var Memo: TMemo);
     procedure SetColors;
     function FindChannelNode(const Channel: string): TTreeNode;
@@ -97,7 +96,6 @@ type
     procedure MostrarConfig;
     procedure OnNickListReceived(const ChannelName: string; List: TStrings);
     procedure OnUserJoined(const ChannelName, Nick: string);
-    procedure OnUserParted(const Channel, User: string);
     procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
     procedure OnChannelJoined(const ChannelName: string);
     procedure UpdateNodeText(Node: TObject; AText: string);
@@ -111,6 +109,7 @@ type
     procedure SetFocusEditInput;
     procedure StopTrayIconAnimation;
     procedure ServerMessage(const AText: string);
+    procedure NotifyChanged;
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -428,20 +427,6 @@ begin
  TreeViewUsers.AlphaSort;
 end;
 
-procedure TMainForm.CloseChannel(const ChannelName: string);
-var
-  Channel: TChannel;
-begin
-  Channel := FChannelList.ChannelByName(ChannelName);
-
-  if Channel = nil then
-    Exit;
-
-  Channel.Node.Free;
-  Channel.Tab.Free;
-  FChannelList.Extract(Channel).Free;
-end;
-
 procedure TMainForm.PageControlChange(Sender: TObject);
 begin
   if PageControl.ActivePage = TabServer then
@@ -588,6 +573,11 @@ begin
   MemoServidor.Append(AText);
 end;
 
+procedure TMainForm.NotifyChanged;
+begin
+	TreeViewUsers.Invalidate;
+end;
+
 procedure TMainForm.OnNickListReceived(const ChannelName: string; List: TStrings);
 var
   Channel: TChannel;
@@ -609,14 +599,6 @@ begin
   AddUserToTreeView(User, Channel);
 end;
 
-procedure TMainForm.OnUserParted(const Channel, User: string);
-begin
-  if User = FIRC.NickName then
-    CloseChannel(Channel)
-  else
-    RemoveNickFromChannelList(User, Channel);
-end;
-
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -632,7 +614,6 @@ begin
   FIRC.OnMessageReceived := @OnMessageReceived;
   FIRC.OnNickListReceived := @OnNickListReceived;
   FIRC.OnUserJoined := @OnUserJoined;
-  FIRC.OnUserParted := @OnUserParted;
   FIRC.OnChannelJoined := @OnChannelJoined;
   FIRC.OnShowPopup := @OnShowPopup;
 
@@ -647,4 +628,4 @@ begin
   inherited Destroy;
 end;
 
-end.
+end.
