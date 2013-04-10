@@ -223,9 +223,12 @@ begin
     Channel.Node := FView.GetNode(AChannel, nil);
   end;
 
-  User := TUser.Create(ANickname);
-  Channel.Users.Add(User);
-  FView.GetNode(User.Nick, Channel.Node);
+  if NickName <> ANickname then
+  begin
+	  User := TUser.Create(ANickname);
+  	Channel.Users.Add(User);
+	  User.Node := FView.GetNode(User.Nick, Channel.Node);
+  end;
 
  	FView.ServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
   FView.NotifyChanged
