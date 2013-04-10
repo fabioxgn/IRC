@@ -92,7 +92,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="7">
+    <Units Count="9">
       <Unit0>
         <Filename Value="LightIRC.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -134,6 +134,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCViewIntf"/>
       </Unit6>
+      <Unit7>
+        <Filename Value="commands\quitcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="quitcommand"/>
+      </Unit7>
+      <Unit8>
+        <Filename Value="commands\command.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="command"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -144,7 +154,7 @@
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>
-      <OtherUnitFiles Value="Indy10\Core;Indy10\Protocols;Indy10\System"/>
+      <OtherUnitFiles Value="Indy10\Core;Indy10\Protocols;Indy10\System;commands"/>
       <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
     </SearchPaths>
     <Parsing>
@@ -199,4 +209,4 @@
       </Item7>
     </Exceptions>
   </Debugging>
-</CONFIG>
+</CONFIG>

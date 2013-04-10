@@ -98,7 +98,6 @@ type
     procedure OnNickListReceived(const ChannelName: string; List: TStrings);
     procedure OnUserJoined(const ChannelName, Nick: string);
     procedure OnUserParted(const Channel, User: string);
-    procedure OnUserQuit(const NickName: string);
     procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
     procedure OnChannelJoined(const ChannelName: string);
     procedure UpdateNodeText(Node: TObject; AText: string);
@@ -111,6 +110,7 @@ type
     procedure SelectChannelTab;
     procedure SetFocusEditInput;
     procedure StopTrayIconAnimation;
+    procedure ServerMessage(const AText: string);
   public
     constructor Create(TheOwner: TComponent); override;
     destructor Destroy; override;
@@ -267,8 +267,6 @@ begin
   if not FileExistsUTF8(DefaultConfigFile) then
     MostrarConfig;
 
-  //Log must be set here, if set in the Create it crashes misteriously
-  FIRC.Log := MemoServidor.Lines;
   FIRC.Connect;
 end;
 
@@ -585,6 +583,11 @@ begin
   TrayIcon.Icon.Assign(Application.Icon);
 end;
 
+procedure TMainForm.ServerMessage(const AText: string);
+begin
+  MemoServidor.Append(AText);
+end;
+
 procedure TMainForm.OnNickListReceived(const ChannelName: string; List: TStrings);
 var
   Channel: TChannel;
@@ -614,16 +617,6 @@ begin
     RemoveNickFromChannelList(User, Channel);
 end;
 
-procedure TMainForm.OnUserQuit(const NickName: string);
-begin
-  TreeViewUsers.BeginUpdate;
-  try
-     FChannelList.RemoveUserFromAllChannels(NickName);
-  finally
-    TreeViewUsers.EndUpdate;
-  end;
-end;
-
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -641,7 +634,6 @@ begin
   FIRC.OnUserJoined := @OnUserJoined;
   FIRC.OnUserParted := @OnUserParted;
   FIRC.OnChannelJoined := @OnChannelJoined;
-  FIRC.OnUserQuit := @OnUserQuit;
   FIRC.OnShowPopup := @OnShowPopup;
 
   ConfigureMemo(MemoServidor);
@@ -655,4 +647,4 @@ begin
   inherited Destroy;
 end;
 
-end.
+end.

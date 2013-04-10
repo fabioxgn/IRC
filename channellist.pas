@@ -53,6 +53,8 @@ type
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
+    procedure Quit(const ANickName, AReason: string);
+    property View: IIRCView read FView;
   end;
 
 
@@ -61,6 +63,10 @@ implementation
 uses strutils;
 
 { TUserList }
+
+resourcestring
+	StrQuit = '* %s %s';
+
 
 function TUserList.UserByNick(const NickName: string): TUser;
 begin
@@ -164,5 +170,11 @@ begin
       end;
 end;
 
-end.
+procedure TChannelList.Quit(const ANickName, AReason: string);
+begin
+  RemoveUserFromAllChannels(ANickName);
+  FView.ServerMessage(Format(StrQuit, [ANickname, AReason]));
+end;
 
+end.
+

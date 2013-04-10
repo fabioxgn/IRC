@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList, IRCViewIntf, quitcommand;
 
 type
 
@@ -14,7 +14,6 @@ type
     TOnChannelJoined = procedure(const Channel: string) of object;
     TOnNickListReceived = procedure(const Channel: string; List: TStrings) of object;
     TOnUserEvent = procedure(const Channel, User: string) of object;
-    TOnUserQuit = procedure(const NickName: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
     TOnShowPopup = procedure(const Msg: string) of object;
 
@@ -27,7 +26,6 @@ type
       FNickName: string;
       FServerMessage: string;
       FServerMessages: TStrings;
-      FLog: TStrings;
       FNickNameList: TStrings;
       FActiveChannel: string;
       FIdIRC: TIdIRC;
@@ -35,7 +33,6 @@ type
       FOnNickListReceived: TOnNickListReceived;
       FOnUserJoined: TOnUserEvent;
       FOnUserLeft: TOnUserEvent;
-      FOnUserQuit: TOnUserQuit;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
       FAutoJoinChannels: TStrings;
@@ -43,6 +40,8 @@ type
       FOwnMessage: Boolean;
       FOldNickName: string;
       FNewNickName: string;
+      FView: IIRCView;
+      FQuitCommand: TQuitCommand;
       procedure ConfigureEvents;
       procedure DoDisconnect;
       function FormatMessage(const NickName, Message: string): string;
@@ -72,7 +71,6 @@ type
       procedure SendChannelJoined;
       procedure SendNickNameListReceived;
       procedure SendParted;
-      procedure SendQuit;
       procedure SendServerMessage; overload;
       procedure SendServerMessage(const Msg: string); overload;
       procedure SendUserJoined;
@@ -81,14 +79,12 @@ type
       procedure MessageBox(const Msg: string);
       procedure HandleIdException(E: EIdException);
     public
-      property Log: TStrings read FLog write FLog;
       property Ready: Boolean read FReady;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
       property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
       property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
-      property OnUserQuit: TOnUserQuit read FOnUserQuit write FOnUserQuit;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
       property NickName: string read GetNickName;
@@ -111,7 +107,6 @@ uses idircconfig, IdSync, sysutils;
 resourcestring
   StrJoined = '* Joined: ';
   StrParted = '* Parted: ';
-  StrQuit = '* %s %s';
 
 const
   NickNameFormat = '<%s>';
@@ -298,9 +293,7 @@ end;
 
 procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
 begin
-  FNickName := ANickname;
-  FMessage := Format(StrQuit, [ANickname, AReason]);
-  TIdSync.SynchronizeMethod(@SendQuit);
+  FQuitCommand.Execute(ANickname, AReason);
 end;
 
 procedure TIRC.OnWelcome(ASender: TIdContext; const AMsg: String);
@@ -376,23 +369,16 @@ begin
   FOnUserLeft(FChannel, FNickname);
 end;
 
-procedure TIRC.SendQuit;
-begin
-  FLog.Add(FMessage);
-  FOnUserQuit(FNickName);
-end;
-
 procedure TIRC.SendServerMessage;
 begin
   if FServerMessages <> nil then
-    FLog.AddStrings(FServerMessages);
+    FView.ServerMessage(FServerMessages.Text);
 
   if FServerMessage <> '' then
-    FLog.Add(FServerMessage);
+		FView.ServerMessage(FServerMessage);
 
-  //TODO: Must copy the messages, not use the TStrings from indy
-  FServerMessages := nil;
   FServerMessage := '';
+  FServerMessages := nil;
 end;
 
 procedure TIRC.SendServerMessage(const Msg: string);
@@ -516,6 +502,9 @@ constructor TIRC.Create(ChannelList: TChannelList);
 begin
   inherited Create;
   FChannelList := ChannelList;
+  FQuitCommand := TQuitCommand.Create(FChannelList);
+
+  FView := ChannelList.View;
   FIdIRC := TIdIRC.Create(nil);
   FCommands := TIRCCommand.Create;
   FAutoJoinChannels := TStringList.Create;
@@ -530,4 +519,4 @@ begin
 end;
 
 end.
-
+
