@@ -52,8 +52,10 @@ type
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
+    procedure RemoveUserFromChannel(const ChannelName, Nickname: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
     procedure Quit(const ANickName, AReason: string);
+    procedure Parted(const ANickname, AHost, AChannel, APartMessage: String);
     property View: IIRCView read FView;
   end;
 
@@ -66,6 +68,7 @@ uses strutils;
 
 resourcestring
 	StrQuit = '* %s %s';
+  StrParted = '* Parted: ';
 
 
 function TUserList.UserByNick(const NickName: string): TUser;
@@ -147,8 +150,27 @@ begin
    begin
      User.Node.Free;
      Channel.Users.Extract(User).Free;
+     FView.NotifyChanged;
    end;
  end;
+end;
+
+procedure TChannelList.RemoveUserFromChannel(const ChannelName, Nickname: string);
+var
+  User: TUser;
+  Channel: TChannel;
+begin
+  Channel := ChannelByName(ChannelName);
+  if Channel = nil then
+     Exit;
+
+  User := Channel.Users.UserByNick(Nickname);
+  if (User <> nil) then
+  begin
+     User.Node.Free;
+     Channel.Users.Extract(User).Free;
+     FView.NotifyChanged;
+  end;
 end;
 
 procedure TChannelList.NickNameChanged(const OldNickName, NewNickName: string);
@@ -166,7 +188,10 @@ begin
 					FView.UpdateTabCaption(User.Tab, NewNickName);
 
         if (User.Node <> nil) then
+        begin
 					FView.UpdateNodeText(User.Node, NewNickName);
+          FView.NotifyChanged;
+        end;
       end;
 end;
 
@@ -176,5 +201,12 @@ begin
   FView.ServerMessage(Format(StrQuit, [ANickname, AReason]));
 end;
 
+procedure TChannelList.Parted(const ANickname, AHost, AChannel, APartMessage: String);
+begin
+ 	//TODO: Remove user
+  RemoveUserFromChannel(AChannel, ANickname);
+	FView.ServerMessage(StrParted + ANickname + ' - ' + ' -' + AHost + ': ' + APartMessage + ' - ' + AChannel);
+end;
+
 end.
-
+

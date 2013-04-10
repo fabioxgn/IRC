@@ -14,6 +14,8 @@ type
   TChannelListTests= class(TTestCase)
   private
     FSUT: TChannelList;
+    FChannel1: TChannel;
+    FChannel2: TChannel;
     procedure Add2ChannelsWith2UsersEach;
   protected
     procedure SetUp; override;
@@ -24,6 +26,7 @@ type
     procedure UserByNick;
     procedure NickNameChanged;
     procedure UserQuit;
+    procedure RemoveUserFromChannel;
   end;
 
   { TView }
@@ -32,6 +35,7 @@ type
 		procedure ServerMessage(const AText: string);
     procedure UpdateNodeText(Node: TObject; AText: string);
     procedure UpdateTabCaption(Tab: TObject; ACaption: string);
+    procedure NotifyChanged;
   end;
 
 implementation
@@ -63,28 +67,29 @@ begin
 
 end;
 
+procedure TView.NotifyChanged;
+begin
+
+end;
+
 
 procedure TChannelListTests.Add2ChannelsWith2UsersEach;
-var
- Channel2: TChannel;
- Channel1: TChannel;
 begin
- Channel1 := TChannel.Create(StrChannel1);
- FSUT.Add(Channel1);
-
- Channel2 := TChannel.Create(StrChannel2);
- FSUT.Add(Channel2);
-
- Channel1.Users.Add(TUser.Create(StrUser1Channel1));
- Channel1.Users.Add(TUser.Create(StrUser2Channel1));
- Channel2.Users.Add(TUser.Create(StrUser1Channel2));
- Channel2.Users.Add(TUser.Create(StrUser2Channel2));
+ FChannel1.Users.Add(TUser.Create(StrUser1Channel1));
+ FChannel1.Users.Add(TUser.Create(StrUser2Channel1));
+ FChannel2.Users.Add(TUser.Create(StrUser1Channel2));
+ FChannel2.Users.Add(TUser.Create(StrUser2Channel2));
 end;
 
 procedure TChannelListTests.SetUp;
 begin
  inherited SetUp;
  FSUT := TChannelList.Create(TView.Create);
+ FChannel1 := TChannel.Create(StrChannel1);
+ FSUT.Add(FChannel1);
+
+ FChannel2 := TChannel.Create(StrChannel2);
+ FSUT.Add(FChannel2);
 end;
 
 procedure TChannelListTests.TearDown;
@@ -105,15 +110,10 @@ end;
 procedure TChannelListTests.ChannelByName;
 const
   StrChannel1CamelCase = '#Channel1';
-var
-  Channel: TChannel;
 begin
-  Channel := TChannel.Create(StrChannel1);
-  FSUT.Add(Channel);
-
-  CheckTrue(Channel = FSUT.ChannelByName(StrChannel1), 'Invalid channel');
-  CheckTrue(Channel = FSUT.ChannelByName(StrChannel1CamelCase), 'Search should be case insensitive');
-  CheckFalse(Assigned(FSUT.ChannelByName(StrChannel2)), 'Shouldnt be assigned');
+  CheckTrue(FChannel1 = FSUT.ChannelByName(StrChannel1), 'Invalid channel');
+  CheckTrue(FChannel1 = FSUT.ChannelByName(StrChannel1CamelCase), 'Search should be case insensitive');
+  CheckFalse(Assigned(FSUT.ChannelByName('#newchannel')), 'Shouldnt be assigned');
 end;
 
 procedure TChannelListTests.UserByNick;
@@ -137,56 +137,50 @@ begin
 end;
 
 procedure TChannelListTests.NickNameChanged;
-var
- Channel2: TChannel;
- Channel1: TChannel;
 begin
- Channel1 := TChannel.Create(StrChannel1);
- FSUT.Add(Channel1);
-
- Channel2 := TChannel.Create(StrChannel2);
- FSUT.Add(Channel2);
-
- Channel1.Users.Add(TUser.Create('User1'));
- Channel1.Users.Add(TUser.Create('User2'));
- Channel2.Users.Add(TUser.Create('User3'));
- Channel2.Users.Add(TUser.Create('User4'));
+ FChannel1.Users.Add(TUser.Create('User1'));
+ FChannel1.Users.Add(TUser.Create('User2'));
+ FChannel2.Users.Add(TUser.Create('User3'));
+ FChannel2.Users.Add(TUser.Create('User4'));
 
  FSUT.NickNameChanged('User2', 'User22');
  FSUT.NickNameChanged('User3', 'User33');
 
- CheckEquals('User1', Channel1.Users.Items[0].Nick);
- CheckEquals('User22', Channel1.Users.Items[1].Nick);
- CheckEquals('User33', Channel2.Users.Items[0].Nick);
- CheckEquals('User4', Channel2.Users.Items[1].Nick);
+ CheckEquals('User1', FChannel1.Users.Items[0].Nick);
+ CheckEquals('User22', FChannel1.Users.Items[1].Nick);
+ CheckEquals('User33', FChannel2.Users.Items[0].Nick);
+ CheckEquals('User4', FChannel2.Users.Items[1].Nick);
 end;
 
 procedure TChannelListTests.UserQuit;
-var
-	Channel2: TChannel;
-	Channel1: TChannel;
 begin
-	Channel1 := TChannel.Create(StrChannel1);
-	FSUT.Add(Channel1);
+	FChannel1.Users.Add(TUser.Create('User1'));
+	FChannel1.Users.Add(TUser.Create('User2'));
+	FChannel2.Users.Add(TUser.Create('User1'));
+	FChannel2.Users.Add(TUser.Create('User3'));
 
-	Channel2 := TChannel.Create(StrChannel2);
-	FSUT.Add(Channel2);
+	FSUT.Quit('User1', 'Leaving');
 
-	Channel1.Users.Add(TUser.Create('User1'));
-	Channel1.Users.Add(TUser.Create('User2'));
-	Channel2.Users.Add(TUser.Create('User1'));
-	Channel2.Users.Add(TUser.Create('User3'));
+  CheckEquals(1, FChannel1.Users.Count);
+  CheckEquals('User2', FChannel1.Users.Items[0].Nick);
+  CheckEquals(1, FChannel2.Users.Count);
+	CheckEquals('User3', FChannel2.Users.Items[0].Nick);
+end;
 
-	FSUT.Quit('User1');
+procedure TChannelListTests.RemoveUserFromChannel;
+begin
+	FChannel1.Users.Add(TUser.Create('User1'));
+	FChannel2.Users.Add(TUser.Create('User1'));
 
-  CheckEquals(1, Channel1.Users.Count);
-  CheckEquals('User2', Channel1.Users.Items[0].Nick);
-  CheckEquals(1, Channel2.Users.Count);
-	CheckEquals('User3', Channel2.Users.Items[0].Nick);
+	FSUT.Parted('User1', '', StrChannel1, '');
+
+  CheckEquals(0, FChannel1.Users.Count);
+  CheckEquals(1, FChannel2.Users.Count);
+	CheckEquals('User1', FChannel2.Users.Items[0].Nick);
 end;
 
 initialization
   RegisterTest(TChannelListTests);
 
 end.
-
+
