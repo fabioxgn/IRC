@@ -10,7 +10,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, IRC, config, ConfigForm, TreeViewHelper, idircconfig, 
-IRCViewIntf, quitcommand, command;
+	IRCViewIntf, quitcommand, command, partedcommand;
 
 {$R *.res}
 
@@ -19,4 +19,4 @@ begin
   Application.CreateForm(TMainForm, MainForm);
   Application.Run;
 end.
-
+

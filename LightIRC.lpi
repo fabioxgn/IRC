@@ -35,7 +35,7 @@
           </Target>
           <SearchPaths>
             <IncludeFiles Value="$(ProjOutDir)"/>
-            <OtherUnitFiles Value="Indy10\Core;Indy10\Protocols;Indy10\System"/>
+            <OtherUnitFiles Value="Indy10\Core;Indy10\Protocols;Indy10\System;commands"/>
             <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
           </SearchPaths>
           <Parsing>
@@ -92,7 +92,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="9">
+    <Units Count="10">
       <Unit0>
         <Filename Value="LightIRC.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -144,6 +144,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="command"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="commands\partedcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="partedcommand"/>
+      </Unit9>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -209,4 +214,4 @@
       </Item7>
     </Exceptions>
   </Debugging>
-</CONFIG>
+</CONFIG>
