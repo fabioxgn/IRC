@@ -155,9 +155,6 @@ object MainForm: TMainForm
         Action = ActionDisconnect
       end
     end
-    object MenuItemJoinChannel: TMenuItem
-      Action = ActionJoinChannel
-    end
     object MenuItemConfig: TMenuItem
       Action = ActionConfig
     end
@@ -181,10 +178,6 @@ object MainForm: TMainForm
     object ActionConfig: TAction
       Caption = 'Config'
       OnExecute = ActionConfigExecute
-    end
-    object ActionJoinChannel: TAction
-      Caption = 'Join Channel'
-      OnExecute = ActionJoinChannelExecute
     end
     object ActionCloseChat: TAction
       Caption = 'Close Chat'

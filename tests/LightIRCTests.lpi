@@ -42,14 +42,14 @@
         <PackageName Value="FCL"/>
       </Item3>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="LightIRCTests.lpr"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="LightIRCTests"/>
       </Unit0>
       <Unit1>
-        <Filename Value="tests\irccommandtests.pas"/>
+        <Filename Value="irccommandtests.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCCommandTests"/>
       </Unit1>
@@ -59,7 +59,7 @@
         <UnitName Value="IRCCommands"/>
       </Unit2>
       <Unit3>
-        <Filename Value="tests\channellisttests.pas"/>
+        <Filename Value="channellisttests.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="channellisttests"/>
       </Unit3>
@@ -74,17 +74,17 @@
         <UnitName Value="StringUtils"/>
       </Unit5>
       <Unit6>
-        <Filename Value="tests\stringutilstests.pas"/>
+        <Filename Value="stringutilstests.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="StringUtilsTests"/>
       </Unit6>
       <Unit7>
-        <Filename Value="tests\usertests.pas"/>
+        <Filename Value="usertests.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="UserTests"/>
       </Unit7>
       <Unit8>
-        <Filename Value="tests\ircutilstests.pas"/>
+        <Filename Value="ircutilstests.pas"/>
         <IsPartOfProject Value="True"/>
         <UnitName Value="IrcUtilsTests"/>
       </Unit8>
@@ -93,6 +93,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="IRCUtils"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="fakeview.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="fakeview"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
@@ -135,4 +140,4 @@
       </Item4>
     </Exceptions>
   </Debugging>
-</CONFIG>
+</CONFIG>

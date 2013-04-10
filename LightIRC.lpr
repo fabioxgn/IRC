@@ -10,7 +10,7 @@ uses
   {$ENDIF}{$ENDIF}
   Interfaces, // this includes the LCL widgetset
   Forms, Main, IRC, config, ConfigForm, TreeViewHelper, idircconfig, 
-	IRCViewIntf, quitcommand, command, partedcommand;
+	IRCViewIntf, quitcommand, command, partedcommand, joinedcommand;
 
 {$R *.res}
 

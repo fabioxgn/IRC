@@ -28,18 +28,12 @@ type
     procedure UserQuit;
     procedure RemoveUserFromChannel;
     procedure CloseChannelWhenCurrentUserParts;
-  end;
-
-  { TView }
-
-  TView = class(TInterfacedObject, IIRCView)
-		procedure ServerMessage(const AText: string);
-    procedure UpdateNodeText(Node: TObject; AText: string);
-    procedure UpdateTabCaption(Tab: TObject; ACaption: string);
-    procedure NotifyChanged;
+    procedure JoinChannel;
   end;
 
 implementation
+
+uses fakeview;
 
 { TChannelListTests }
 
@@ -50,29 +44,6 @@ const
   StrUser2Channel1 = '+User2C1';
   StrUser1Channel2 = '@User1C2';
   StrUser2Channel2 = '+User2C2';
-
-{ TView }
-
-procedure TView.ServerMessage(const AText: string);
-begin
-
-end;
-
-procedure TView.UpdateNodeText(Node: TObject; AText: string);
-begin
-
-end;
-
-procedure TView.UpdateTabCaption(Tab: TObject; ACaption: string);
-begin
-
-end;
-
-procedure TView.NotifyChanged;
-begin
-
-end;
-
 
 procedure TChannelListTests.Add2ChannelsWith2UsersEach;
 begin
@@ -85,7 +56,7 @@ end;
 procedure TChannelListTests.SetUp;
 begin
  inherited SetUp;
- FSUT := TChannelList.Create(TView.Create);
+ FSUT := TChannelList.Create(TFakeView.Create);
  FChannel1 := TChannel.Create(StrChannel1);
  FSUT.Add(FChannel1);
 
@@ -190,6 +161,22 @@ begin
 
   CheckEquals(1, FSUT.Count);
   CheckEquals(1, FChannel2.Users.Count);
+end;
+
+procedure TChannelListTests.JoinChannel;
+begin
+	FSUT.Clear;
+  FSUT.Join('Nick', '', '#channel');
+
+  CheckEquals(1, FSUT.Count);
+  CheckEquals('Nick', FSUT.Items[0].Users[0].Nick);
+
+  FSUT.Join('Nick2', '', '#channel');
+  CheckEquals(1, FSUT.Count);
+  CheckEquals('Nick2', FSUT.Items[0].Users[1].Nick);
+
+  FSUT.Join('Nick', '', '#channel2');
+  CheckEquals(2, FSUT.Count);
 end;
 
 initialization

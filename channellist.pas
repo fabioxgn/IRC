@@ -56,7 +56,8 @@ type
     procedure RemoveUserFromChannel(const ChannelName, Nickname: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
     procedure Quit(const ANickName, AReason: string);
-    procedure Parted(const ANickname, AHost, AChannel, APartMessage: String);
+    procedure Parted(const ANickname, AHost, AChannel, APartMessage: string);
+    procedure Joined(const ANickname, AHost, AChannel: string);
     property View: IIRCView read FView;
     property NickName: string read FNickName write FNickName;
   end;
@@ -71,6 +72,7 @@ uses strutils;
 resourcestring
 	StrQuit = '* %s %s';
   StrParted = '* Parted: ';
+  StrJoined = '* Joined: ';
 
 
 function TUserList.UserByNick(const NickName: string): TUser;
@@ -203,9 +205,30 @@ end;
 
 procedure TChannelList.Parted(const ANickname, AHost, AChannel, APartMessage: String);
 begin
- 	//TODO: Remove user
   RemoveUserFromChannel(AChannel, ANickname);
 	FView.ServerMessage(StrParted + ANickname + ' - ' + ' -' + AHost + ': ' + APartMessage + ' - ' + AChannel);
+end;
+
+procedure TChannelList.Joined(const ANickname, AHost, AChannel: string);
+var
+ 	Channel: TChannel;
+  User: TUser;
+begin
+  Channel := ChannelByName(AChannel);
+  if Channel = nil then
+  begin
+		Channel := TChannel.Create(AChannel);
+    Add(Channel);
+    Channel.Tab := FView.GetChannelTab(AChannel);
+    Channel.Node := FView.GetNode(AChannel, nil);
+  end;
+
+  User := TUser.Create(ANickname);
+  Channel.Users.Add(User);
+  FView.GetNode(User.Nick, Channel.Node);
+
+ 	FView.ServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
+  FView.NotifyChanged
 end;
 
 end.

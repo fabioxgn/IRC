@@ -20,7 +20,7 @@
     </i18n>
     <VersionInfo>
       <UseVersionInfo Value="True"/>
-      <BuildNr Value="5"/>
+      <BuildNr Value="6"/>
       <CharSet Value="04B0"/>
       <StringTable ProductVersion=""/>
     </VersionInfo>
@@ -92,7 +92,7 @@
         <PackageName Value="LCL"/>
       </Item2>
     </RequiredPackages>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="LightIRC.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -149,6 +149,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="partedcommand"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="commands\joinedcommand.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="joinedcommand"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

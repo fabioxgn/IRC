@@ -18,7 +18,6 @@ type
     ActionCloseTab: TAction;
     ActionChat: TAction;
     ActionCloseChat: TAction;
-    ActionJoinChannel: TAction;
     ActionConfig: TAction;
     ActionConnect: TAction;
     ActionDisconnect: TAction;
@@ -36,7 +35,6 @@ type
     MenuItemChat: TMenuItem;
     MenuItemCloseTab: TMenuItem;
     MenuItemCloseActiveTab: TMenuItem;
-    MenuItemJoinChannel: TMenuItem;
     MenuItemConfig: TMenuItem;
     MenuItemServer: TMenuItem;
     PageControl: TPageControl;
@@ -60,7 +58,6 @@ type
     procedure ActionConfigExecute(Sender: TObject);
     procedure ActionDisconnectExecute(Sender: TObject);
     procedure ActionExitExecute(Sender: TObject);
-    procedure ActionJoinChannelExecute(Sender: TObject);
     procedure EditFilterKeyDown(Sender: TObject; var Key: Word;
      Shift: TShiftState);
     procedure EditFilterKeyUp(Sender: TObject; var Key: Word;
@@ -83,23 +80,20 @@ type
   private
     FIRC: TIRC;
     FChannelList: TChannelList;
-    procedure AddChannelToTree(Channel: TChannel);
     procedure AddNicksToChannel(const Channel: TChannel; const List: TStrings);
     procedure AddNicksToTreeView(const Channel: TChannel);
     procedure AddUserToTreeView(const User: TUser; const Channel: TChannel);
     procedure ConfigureMemo(var Memo: TMemo);
     procedure SetColors;
-    function FindChannelNode(const Channel: string): TTreeNode;
-    function GetChannelTab(const Channel: string): TTabSheet;
+    function GetChannelTab(const Channel: string): TObject;
+    function GetNode(const ACaption: string; ParentNode: TObject): TObject;
     function IsActiveTabChannel: Boolean;
     function IsChatTabOpen(const Nome: string): Boolean;
     function IsSelectedNodeUser: Boolean;
     function IsSelectedNodeChannel: Boolean;
     procedure MostrarConfig;
     procedure OnNickListReceived(const ChannelName: string; List: TStrings);
-    procedure OnUserJoined(const ChannelName, Nick: string);
     procedure OnMessageReceived(const Channel, Message: string; OwnMessage: Boolean);
-    procedure OnChannelJoined(const ChannelName: string);
     procedure UpdateNodeText(Node: TObject; AText: string);
     procedure UpdateTabCaption(Tab: TObject; ACaption: string);
     procedure RemoveChannelFromList(const Channel: string);
@@ -140,18 +134,6 @@ end;
 procedure TMainForm.ActionExitExecute(Sender: TObject);
 begin
   Close;
-end;
-
-procedure TMainForm.ActionJoinChannelExecute(Sender: TObject);
-var
-  Channel: string;
-begin
-  Channel := InputBox('Channel', 'Channel Name:', '');
-
-  if Channel = '' then
-	  Exit;
-
-  FIRC.Join(Channel);
 end;
 
 procedure TMainForm.EditFilterKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -283,7 +265,7 @@ var
 
  function AnimateTrayIcon: Boolean;
  begin
-   Result := (not OwnMessage) and ((Channel[1] <> '#') or (Pos(FIRC.NickName, Message) > 0))
+   Result := (not OwnMessage) and (not Application.Active) and ((Channel[1] <> '#') or (Pos(FIRC.NickName, Message) > 0))
  end;
 
 begin
@@ -293,26 +275,10 @@ begin
   if AnimateTrayIcon then
 	  TrayIcon.Animate := True; //Should not toggle, more messages may have triggered this
 
-  Tab := GetChannelTab(Channel);
+  Tab := GetChannelTab(Channel) as TTabSheet;
 
   Memo := Tab.Components[0] as TMemo;
   Memo.Lines.Add(Message);
-end;
-
-procedure TMainForm.OnChannelJoined(const ChannelName: string);
-var
-  Channel: TChannel;
-  Tab: TTabSheet;
-begin
-  Channel := TChannel.Create(ChannelName);
-  FChannelList.Add(Channel);
-
-  Tab := GetChannelTab(Channel.Name);
-  Channel.Tab := Tab;
-  PageControl.ActivePage := Tab;
-
-  AddChannelToTree(Channel);
-  SetFocusEditInput;
 end;
 
 procedure TMainForm.UpdateTabCaption(Tab: TObject; ACaption: string);
@@ -359,12 +325,7 @@ begin
   TreeViewUsers.BackgroundColor := LightColor;
 end;
 
-function TMainForm.FindChannelNode(const Channel: string): TTreeNode;
-begin
-  Result := FChannelList.ChannelByName(Channel).Node as TTreeNode;
-end;
-
-function TMainForm.GetChannelTab(const Channel: string): TTabSheet;
+function TMainForm.GetChannelTab(const Channel: string): TObject;
 var
   ChannelName: string;
 begin
@@ -372,6 +333,15 @@ begin
   Result := GetTabByName(ChannelName);
   if Result = nil then
     Result := NewChannelTab(ChannelName);
+end;
+
+function TMainForm.GetNode(const ACaption: string; ParentNode: TObject): TObject;
+begin
+  if ParentNode = nil then
+  	Result := TreeViewUsers.Items.Add(nil, ACaption)
+  else
+		Result := TreeViewUsers.Items.AddChild(ParentNode as TTreeNode, ACaption);
+  TreeViewUsers.AlphaSort;
 end;
 
 function TMainForm.IsActiveTabChannel: Boolean;
@@ -392,12 +362,6 @@ end;
 function TMainForm.IsSelectedNodeChannel: Boolean;
 begin
   Result := (TreeViewUsers.Selected <> nil) and (TreeViewUsers.Selected.Parent = nil);
-end;
-
-procedure TMainForm.AddChannelToTree(Channel: TChannel);
-begin
-  Channel.Node := TreeViewUsers.Items.Add(nil, Channel.Name);
-  TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.AddNicksToChannel(const Channel: TChannel; const List: TStrings);
@@ -563,7 +527,7 @@ begin
   if (TreeViewUsers.Selected = nil) or (TreeViewUsers.Selected.Parent = nil) then
      Exit;
 
-  PageControl.ActivePage := GetChannelTab(TreeViewUsers.Selected.Text);
+  PageControl.ActivePage := GetChannelTab(TreeViewUsers.Selected.Text) as TTabSheet;
 end;
 
 procedure TMainForm.SetFocusEditInput;
@@ -597,18 +561,6 @@ begin
   AddNicksToTreeView(Channel);
 end;
 
-procedure TMainForm.OnUserJoined(const ChannelName, Nick: string);
-var
-  Channel: TChannel;
-  User: TUser;
-begin
-  Channel := FChannelList.ChannelByName(ChannelName);
-
-  User := TUser.Create(Nick);
-  Channel.Users.Add(User);
-  AddUserToTreeView(User, Channel);
-end;
-
 constructor TMainForm.Create(TheOwner: TComponent);
 begin
   inherited Create(TheOwner);
@@ -623,8 +575,6 @@ begin
   FIRC := TIRC.Create(FChannelList);
   FIRC.OnMessageReceived := @OnMessageReceived;
   FIRC.OnNickListReceived := @OnNickListReceived;
-  FIRC.OnUserJoined := @OnUserJoined;
-  FIRC.OnChannelJoined := @OnChannelJoined;
   FIRC.OnShowPopup := @OnShowPopup;
 
   ConfigureMemo(MemoServidor);

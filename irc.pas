@@ -5,13 +5,13 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList, IRCViewIntf, quitcommand, partedcommand;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList,
+  IRCViewIntf, quitcommand, partedcommand, joinedcommand;
 
 type
 
     { TIRC }
 
-    TOnChannelJoined = procedure(const Channel: string) of object;
     TOnNickListReceived = procedure(const Channel: string; List: TStrings) of object;
     TOnUserEvent = procedure(const Channel, User: string) of object;
     TOnMessageReceived = procedure(const Channel, Message: string; OwnMessage: Boolean) of object;
@@ -29,7 +29,6 @@ type
       FNickNameList: TStrings;
       FActiveChannel: string;
       FIdIRC: TIdIRC;
-      FOnChannelJoined: TOnChannelJoined;
       FOnNickListReceived: TOnNickListReceived;
       FOnUserJoined: TOnUserEvent;
       FOnMessageReceived: TOnMessageReceived;
@@ -42,6 +41,7 @@ type
       FView: IIRCView;
       FQuitCommand: TQuitCommand;
       FPartedCommand: TPartedCommand;
+      FJoinedCommand: TJoinedCommand;
       procedure ConfigureEvents;
       procedure DoDisconnect;
       function FormatMessage(const NickName, Message: string): string;
@@ -68,11 +68,9 @@ type
       function RemoveOPVoicePrefix(const Channel: string): string;
       procedure Say(const Channel, Msg: string);
       procedure SendMessage;
-      procedure SendChannelJoined;
       procedure SendNickNameListReceived;
       procedure SendServerMessage; overload;
       procedure SendServerMessage(const Msg: string); overload;
-      procedure SendUserJoined;
 			procedure SendNickNameChanged;
       procedure DoConnect;
       procedure MessageBox(const Msg: string);
@@ -80,7 +78,6 @@ type
     public
       property Ready: Boolean read FReady;
       property ActiveChannel: string read FActiveChannel write FActiveChannel;
-      property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
@@ -102,9 +99,6 @@ type
 implementation
 
 uses idircconfig, IdSync, sysutils;
-
-resourcestring
-  StrJoined = '* Joined: ';
 
 const
   NickNameFormat = '<%s>';
@@ -236,10 +230,10 @@ end;
 
 procedure TIRC.OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
 begin
-  //{$IFDEF DEBUG}
+  {$IFDEF DEBUG}
   FServerMessage := AMessage;
   TIdSync.SynchronizeMethod(@SendServerMessage);
-  //{$ENDIF}
+  {$ENDIF}
 end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
@@ -264,18 +258,7 @@ end;
 
 procedure TIRC.OnJoin(ASender: TIdContext; const ANickname, AHost, AChannel: String);
 begin
-  if ANickname = FIdIRC.UsedNickname then
-  begin
-    FChannel := AChannel;
-    TIdSync.SynchronizeMethod(@SendChannelJoined);
-    Exit;
-  end;
-
-  FChannel := AChannel;
-  FNickName := ANickname;
-  TIdSync.SynchronizeMethod(@SendUserJoined);
-
-  SendServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);
+	FJoinedCommand.Execute(ANickname, AHost, AChannel);
 end;
 
 procedure TIRC.OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
@@ -348,11 +331,6 @@ begin
   FOnMessageReceived(FChannel, FMessage, FOwnMessage);
 end;
 
-procedure TIRC.SendChannelJoined;
-begin
-  FOnChannelJoined(FChannel);
-end;
-
 procedure TIRC.SendNickNameListReceived;
 begin
   FOnNickListReceived(FChannel, FNicknameList)
@@ -374,11 +352,6 @@ procedure TIRC.SendServerMessage(const Msg: string);
 begin
   FServerMessage := Msg;
   TIdSync.SynchronizeMethod(@SendServerMessage);
-end;
-
-procedure TIRC.SendUserJoined;
-begin
-  FOnUserJoined(FChannel, FNickname);
 end;
 
 procedure TIRC.SendNickNameChanged;
@@ -499,6 +472,7 @@ begin
   FChannelList := ChannelList;
   FQuitCommand := TQuitCommand.Create(FChannelList);
   FPartedCommand := TPartedCommand.Create(FChannelList);
+  FJoinedCommand := TJoinedCommand.Create(FChannelList);
 
   FView := ChannelList.View;
   FIdIRC := TIdIRC.Create(nil);
@@ -510,6 +484,7 @@ destructor TIRC.Destroy;
 begin
   FPartedCommand.Free;
   FQuitCommand.Free;
+  FJoinedCommand.Free;
   FIdIRC.Free;
   FAutoJoinChannels.Free;
   FCommands.Free;
