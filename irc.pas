@@ -93,6 +93,7 @@ type
       procedure Disconnect;
       procedure Join(const Name: string);
       procedure Part(const Name: string);
+      procedure Ping;
       procedure SendMessage(const Message: string);
       constructor Create(ChannelList: TChannelList);
       destructor Destroy; override;
@@ -117,6 +118,7 @@ begin
  except
    //We just ignore everything at this point and hope for the best
  end;
+ FChannelList.RemoveUserFromAllChannels(FChannelList.NickName);
 end;
 
 procedure TIRC.ConfigureEvents;
@@ -234,10 +236,10 @@ end;
 
 procedure TIRC.OnRaw(ASender: TIdContext; AIn: Boolean; const AMessage: String);
 begin
-  {$IFDEF DEBUG}
+  //{$IFDEF DEBUG}
   FServerMessage := AMessage;
   TIdSync.SynchronizeMethod(@SendServerMessage);
-  {$ENDIF}
+  //{$ENDIF}
 end;
 
 procedure TIRC.OnPrivateMessage(ASender: TIdContext; const ANickname, AHost, ATarget, AMessage: String);
@@ -466,6 +468,11 @@ begin
     on E: EIdException do
       HandleIdException(E);
   end;
+end;
+
+procedure TIRC.Ping;
+begin
+	FIdIRC.Ping(FIdIRC.Host);
 end;
 
 procedure TIRC.SendMessage(const Message: string);

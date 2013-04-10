@@ -14,7 +14,7 @@ type
 
   TMainForm = class(TForm, IIRCView)
     ActionExit: TAction;
-    ActionCloseChannel: TAction;
+    ActionPart: TAction;
     ActionCloseTab: TAction;
     ActionChat: TAction;
     ActionCloseChat: TAction;
@@ -48,11 +48,12 @@ type
     PopupMenuTreeView: TPopupMenu;
     StatusBar: TStatusBar;
     TabServer: TTabSheet;
+    TimerPing: TTimer;
     TimerConnection: TTimer;
     TrayIcon: TTrayIcon;
     TreeViewUsers: TTreeView;
     procedure ActionChatExecute(Sender: TObject);
-    procedure ActionCloseChannelExecute(Sender: TObject);
+    procedure ActionPartExecute(Sender: TObject);
     procedure ActionCloseChatExecute(Sender: TObject);
     procedure ActionCloseTabExecute(Sender: TObject);
     procedure ActionConnectExecute(Sender: TObject);
@@ -75,6 +76,7 @@ type
      Shift: TShiftState; X, Y: Integer);
     procedure PopupMenuTreeViewPopup(Sender: TObject);
     procedure TimerConnectionTimer(Sender: TObject);
+    procedure TimerPingTimer(Sender: TObject);
     procedure TrayIconClick(Sender: TObject);
     procedure TreeViewUsersDblClick(Sender: TObject);
     procedure TreeViewUsersSelectionChanged(Sender: TObject);
@@ -234,7 +236,7 @@ begin
   SelectChannelTab;
 end;
 
-procedure TMainForm.ActionCloseChannelExecute(Sender: TObject);
+procedure TMainForm.ActionPartExecute(Sender: TObject);
 begin
   FIRC.Part(TreeViewUsers.Selected.Text);
 end;
@@ -455,7 +457,7 @@ var
 begin
   IsChatOpen := IsChatTabOpen(TreeViewUsers.Selected.Text);
 
-  ActionCloseChannel.Visible := IsSelectedNodeChannel;
+  ActionPart.Visible := IsSelectedNodeChannel;
   ActionChat.Visible := IsSelectedNodeUser and (not IsChatOpen);
   ActionCloseChat.Visible := IsSelectedNodeUser and IsChatOpen;
 end;
@@ -463,9 +465,17 @@ end;
 procedure TMainForm.TimerConnectionTimer(Sender: TObject);
 begin
   if FIRC.IsConnected then
+  begin
 		StatusBar.Panels[0].Text := Format('Connected. %s@%s', [FIRC.NickName, FIRC.HostName])
+  end
   else
 	  StatusBar.Panels[0].Text := 'Disconnected :(';
+end;
+
+procedure TMainForm.TimerPingTimer(Sender: TObject);
+begin
+	if FIRC.IsConnected then
+  	FIRC.Ping;
 end;
 
 procedure TMainForm.TrayIconClick(Sender: TObject);

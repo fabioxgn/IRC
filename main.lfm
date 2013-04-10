@@ -198,9 +198,9 @@ object MainForm: TMainForm
       Caption = 'Close'
       OnExecute = ActionCloseTabExecute
     end
-    object ActionCloseChannel: TAction
-      Caption = 'Close'
-      OnExecute = ActionCloseChannelExecute
+    object ActionPart: TAction
+      Caption = 'Part'
+      OnExecute = ActionPartExecute
     end
     object ActionExit: TAction
       Caption = 'Exit'
@@ -218,7 +218,7 @@ object MainForm: TMainForm
       Action = ActionChat
     end
     object MenuItemCloseChannel: TMenuItem
-      Action = ActionCloseChannel
+      Action = ActionPart
     end
   end
   object PopupMenuPageControl: TPopupMenu
@@ -4603,5 +4603,11 @@ object MainForm: TMainForm
       FF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFFFF00FFFF
       FF00FFFFFF00FFFFFF00FFFFFF00
     }
+  end
+  object TimerPing: TTimer
+    Interval = 120000
+    OnTimer = TimerPingTimer
+    left = 584
+    top = 256
   end
 end
