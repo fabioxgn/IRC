@@ -23,14 +23,14 @@ procedure TUserTests.RemoveOPVoiceChars;
 begin
   FSUT := TUser.Create('@op');
   try
-    CheckEquals('op', FSUT.DisplayNick, '@ char must be removed from OP nicks');
+    CheckEquals('op', FSUT.NickName, '@ char must be removed from OP nicks');
   finally
     FSUT.Free;
   end;
 
   FSUT := TUser.Create('+voice');
   try
-    CheckEquals('voice', FSUT.DisplayNick, '+ char must be removed from voice nicks');
+    CheckEquals('voice', FSUT.NickName, '+ char must be removed from voice nicks');
   finally
     FSUT.Free;
   end;

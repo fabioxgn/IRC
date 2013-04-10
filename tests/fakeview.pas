@@ -16,8 +16,8 @@ type
 	  procedure UpdateNodeText(Node: TObject; AText: string);
 	  procedure UpdateTabCaption(Tab: TObject; ACaption: string);
 	  procedure NotifyChanged;
-	  function GetChannelNode(const AChannel: string): TObject;
-	  function GetChannelTab(const AChannel: string): TObject;
+    function GetTab(const ACaption: string): TObject;
+    function GetNode(const ACaption: string; ParentNode: TObject): TObject;
 	end;
 
 implementation
@@ -44,12 +44,12 @@ begin
 
 end;
 
-function TFakeView.GetChannelNode(const AChannel: string): TObject;
+function TFakeView.GetTab(const ACaption: string): TObject;
 begin
 
 end;
 
-function TFakeView.GetChannelTab(const AChannel: string): TObject;
+function TFakeView.GetNode(const ACaption: string; ParentNode: TObject): TObject;
 begin
 
 end;

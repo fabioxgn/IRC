@@ -118,37 +118,41 @@ begin
  FSUT.NickNameChanged('User2', 'User22');
  FSUT.NickNameChanged('User3', 'User33');
 
- CheckEquals('User1', FChannel1.Users.Items[0].Nick);
- CheckEquals('User22', FChannel1.Users.Items[1].Nick);
- CheckEquals('User33', FChannel2.Users.Items[0].Nick);
- CheckEquals('User4', FChannel2.Users.Items[1].Nick);
+ CheckEquals('User1', FChannel1.Users.Items[0].NickName);
+ CheckEquals('User22', FChannel1.Users.Items[1].NickName);
+ CheckEquals('User33', FChannel2.Users.Items[0].NickName);
+ CheckEquals('User4', FChannel2.Users.Items[1].NickName);
 end;
 
 procedure TChannelListTests.UserQuit;
 begin
 	FChannel1.Users.Add(TUser.Create('User1'));
 	FChannel1.Users.Add(TUser.Create('User2'));
-	FChannel2.Users.Add(TUser.Create('User1'));
+	FChannel2.Users.Add(TUser.Create('@User1'));
 	FChannel2.Users.Add(TUser.Create('User3'));
 
 	FSUT.Quit('User1', 'Leaving');
 
   CheckEquals(1, FChannel1.Users.Count);
-  CheckEquals('User2', FChannel1.Users.Items[0].Nick);
+  CheckEquals('User2', FChannel1.Users.Items[0].NickName);
   CheckEquals(1, FChannel2.Users.Count);
-	CheckEquals('User3', FChannel2.Users.Items[0].Nick);
+	CheckEquals('User3', FChannel2.Users.Items[0].NickName);
 end;
 
 procedure TChannelListTests.RemoveUserFromChannel;
 begin
 	FChannel1.Users.Add(TUser.Create('User1'));
+  FChannel1.Users.Add(TUser.Create('@User2'));
 	FChannel2.Users.Add(TUser.Create('User1'));
+  FChannel2.Users.Add(TUser.Create('+User3'));
 
 	FSUT.Parted('User1', '', StrChannel1, '');
+	FSUT.Parted('User2', '', StrChannel1, '');
+	FSUT.Parted('User3', '', StrChannel2, '');
 
   CheckEquals(0, FChannel1.Users.Count);
   CheckEquals(1, FChannel2.Users.Count);
-	CheckEquals('User1', FChannel2.Users.Items[0].Nick);
+	CheckEquals('User1', FChannel2.Users.Items[0].NickName);
 end;
 
 procedure TChannelListTests.CloseChannelWhenCurrentUserParts;
@@ -166,16 +170,16 @@ end;
 procedure TChannelListTests.JoinChannel;
 begin
 	FSUT.Clear;
-  FSUT.Join('Nick', '', '#channel');
+  FSUT.Joined('Nick', '', '#channel');
 
   CheckEquals(1, FSUT.Count);
-  CheckEquals('Nick', FSUT.Items[0].Users[0].Nick);
+  CheckEquals('Nick', FSUT.Items[0].Users[0].NickName);
 
-  FSUT.Join('Nick2', '', '#channel');
+  FSUT.Joined('Nick2', '', '#channel');
   CheckEquals(1, FSUT.Count);
-  CheckEquals('Nick2', FSUT.Items[0].Users[1].Nick);
+  CheckEquals('Nick2', FSUT.Items[0].Users[1].NickName);
 
-  FSUT.Join('Nick', '', '#channel2');
+  FSUT.Joined('Nick', '', '#channel2');
   CheckEquals(2, FSUT.Count);
 end;
 
