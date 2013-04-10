@@ -301,6 +301,8 @@ end;
 
 procedure TIRC.OnNickNameChanged(ASender: TIdContext; const AOldNickname, AHost, ANewNickname: string);
 begin
+	FChannelList.NickName := FIdIRC.UsedNickname;
+
   FOldNickName := AOldNickname;
   FNewNickName := ANewNickname;
   TIdSync.SynchronizeMethod(@SendNickNameChanged);
@@ -423,6 +425,7 @@ begin
   ConfigureEvents;
 	TIdIRCConfig.Configure(FIdIRC, FAutoJoinChannels);
  	DoConnect;
+  FChannelList.NickName := FIdIRC.UsedNickname;
   AutoJoinChannels;
   TIdIRCConfig.ConfigureEncoding(FIdIRC);
 end;
@@ -498,6 +501,8 @@ end;
 
 destructor TIRC.Destroy;
 begin
+  FPartedCommand.Free;
+  FQuitCommand.Free;
   FIdIRC.Free;
   FAutoJoinChannels.Free;
   FCommands.Free;
