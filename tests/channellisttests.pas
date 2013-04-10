@@ -27,6 +27,7 @@ type
     procedure NickNameChanged;
     procedure UserQuit;
     procedure RemoveUserFromChannel;
+    procedure CloseChannelWhenCurrentUserParts;
   end;
 
   { TView }
@@ -177,6 +178,18 @@ begin
   CheckEquals(0, FChannel1.Users.Count);
   CheckEquals(1, FChannel2.Users.Count);
 	CheckEquals('User1', FChannel2.Users.Items[0].Nick);
+end;
+
+procedure TChannelListTests.CloseChannelWhenCurrentUserParts;
+begin
+  FSUT.NickName := 'Nick';
+	FChannel1.Users.Add(TUser.Create(FSUT.NickName));
+	FChannel2.Users.Add(TUser.Create(FSUT.NickName));
+
+	FSUT.Parted(FSUT.NickName, '', StrChannel1, '');
+
+  CheckEquals(1, FSUT.Count);
+  CheckEquals(1, FChannel2.Users.Count);
 end;
 
 initialization

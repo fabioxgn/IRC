@@ -47,6 +47,7 @@ type
   TChannelList = class(specialize TFPGObjectList<TChannel>)
   private
     FView: IIRCView;
+    FNickName: string;
   public
     constructor Create(View: IIRCView);
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
@@ -57,6 +58,7 @@ type
     procedure Quit(const ANickName, AReason: string);
     procedure Parted(const ANickname, AHost, AChannel, APartMessage: String);
     property View: IIRCView read FView;
+    property NickName: string read FNickName write FNickName;
   end;
 
 
@@ -159,6 +161,7 @@ procedure TChannelList.RemoveUserFromChannel(const ChannelName, Nickname: string
 var
   User: TUser;
   Channel: TChannel;
+  RemoveChannel: Boolean;
 begin
   Channel := ChannelByName(ChannelName);
   if Channel = nil then
@@ -167,8 +170,14 @@ begin
   User := Channel.Users.UserByNick(Nickname);
   if (User <> nil) then
   begin
+     RemoveChannel := User.Nick = FNickName;
      User.Node.Free;
      Channel.Users.Extract(User).Free;
+     if RemoveChannel then
+     begin
+				Channel.Node.Free;
+				Extract(Channel).Free;
+     end;
      FView.NotifyChanged;
   end;
 end;
