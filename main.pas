@@ -85,7 +85,7 @@ type
     procedure AddUserToTreeView(const User: TUser; const Channel: TChannel);
     procedure ConfigureMemo(var Memo: TMemo);
     procedure SetColors;
-    function GetChannelTab(const Channel: string): TObject;
+    function GetTab(const ACaption: string): TObject;
     function GetNode(const ACaption: string; ParentNode: TObject): TObject;
     function IsActiveTabChannel: Boolean;
     function IsChatTabOpen(const Nome: string): Boolean;
@@ -275,7 +275,7 @@ begin
   if AnimateTrayIcon then
 	  TrayIcon.Animate := True; //Should not toggle, more messages may have triggered this
 
-  Tab := GetChannelTab(Channel) as TTabSheet;
+  Tab := GetTab(Channel) as TTabSheet;
 
   Memo := Tab.Components[0] as TMemo;
   Memo.Lines.Add(Message);
@@ -325,11 +325,11 @@ begin
   TreeViewUsers.BackgroundColor := LightColor;
 end;
 
-function TMainForm.GetChannelTab(const Channel: string): TObject;
+function TMainForm.GetTab(const ACaption: string): TObject;
 var
   ChannelName: string;
 begin
-  ChannelName := TIRCUtils.RemoveOPVoicePrefix(Channel);
+  ChannelName := TIRCUtils.RemoveOPVoicePrefix(ACaption);
   Result := GetTabByName(ChannelName);
   if Result = nil then
     Result := NewChannelTab(ChannelName);
@@ -380,7 +380,7 @@ begin
 	 try
 	   Channel.Node := TreeViewUsers.Items.FindTopLvlNode(Channel.Name);
 	 for User in Channel.Users do
-	   User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.Nick);
+	   User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.NickNameInChannel);
 	 TreeViewUsers.AlphaSort;
 	 finally
 	   TreeViewUsers.EndUpdate;
@@ -389,7 +389,7 @@ end;
 
 procedure TMainForm.AddUserToTreeView(const User: TUser; const Channel: TChannel);
 begin
- User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.DisplayNick);
+ User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.NickNameInChannel);
  TreeViewUsers.AlphaSort;
 end;
 
@@ -527,7 +527,7 @@ begin
   if (TreeViewUsers.Selected = nil) or (TreeViewUsers.Selected.Parent = nil) then
      Exit;
 
-  PageControl.ActivePage := GetChannelTab(TreeViewUsers.Selected.Text) as TTabSheet;
+  PageControl.ActivePage := GetTab(TreeViewUsers.Selected.Text) as TTabSheet;
 end;
 
 procedure TMainForm.SetFocusEditInput;
