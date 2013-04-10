@@ -5,7 +5,7 @@ unit quitcommand;
 interface
 
 uses
-	command, IdSync;
+	command;
 
 type
 
@@ -34,7 +34,7 @@ procedure TQuitCommand.Execute(const ANickName, AReason: string);
 begin
 	FNickName :=  ANickName;
   FReason := AReason;
-  TIdSync.SynchronizeMethod(@Send);
+  Syncronize(@Send);
 end;
 
 end.

@@ -5,7 +5,7 @@ unit IRC;
 interface
 
 uses
-  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList, IRCViewIntf, quitcommand;
+  Classes, IdIRC, IdComponent, IdContext, IRCCommands, IdException, ChannelList, IRCViewIntf, quitcommand, partedcommand;
 
 type
 
@@ -32,7 +32,6 @@ type
       FOnChannelJoined: TOnChannelJoined;
       FOnNickListReceived: TOnNickListReceived;
       FOnUserJoined: TOnUserEvent;
-      FOnUserLeft: TOnUserEvent;
       FOnMessageReceived: TOnMessageReceived;
       FOnShowPopup: TOnShowPopup;
       FAutoJoinChannels: TStrings;
@@ -42,6 +41,7 @@ type
       FNewNickName: string;
       FView: IIRCView;
       FQuitCommand: TQuitCommand;
+      FPartedCommand: TPartedCommand;
       procedure ConfigureEvents;
       procedure DoDisconnect;
       function FormatMessage(const NickName, Message: string): string;
@@ -70,7 +70,6 @@ type
       procedure SendMessage;
       procedure SendChannelJoined;
       procedure SendNickNameListReceived;
-      procedure SendParted;
       procedure SendServerMessage; overload;
       procedure SendServerMessage(const Msg: string); overload;
       procedure SendUserJoined;
@@ -84,7 +83,6 @@ type
       property OnChannelJoined: TOnChannelJoined read FOnChannelJoined write FOnChannelJoined;
       property OnNickListReceived: TOnNickListReceived read FOnNickListReceived write FOnNickListReceived;
       property OnUserJoined: TOnUserEvent read FOnUserJoined write FOnUserJoined;
-      property OnUserParted: TOnUserEvent read FOnUserLeft write FOnUserLeft;
       property OnMessageReceived: TOnMessageReceived read FOnMessageReceived write FOnMessageReceived;
       property OnShowPopup: TOnShowPopup read FOnShowPopup write FOnShowPopup;
       property NickName: string read GetNickName;
@@ -106,7 +104,6 @@ uses idircconfig, IdSync, sysutils;
 
 resourcestring
   StrJoined = '* Joined: ';
-  StrParted = '* Parted: ';
 
 const
   NickNameFormat = '<%s>';
@@ -281,14 +278,7 @@ end;
 
 procedure TIRC.OnPart(ASender: TIdContext; const ANickname, AHost, AChannel, APartMessage: String);
 begin
-  FChannel := AChannel;
-  FNickName := ANickname;
-  TIdSync.SynchronizeMethod(@SendParted);
-
-  if ANickname = NickName then
-     Exit;
-
-  SendServerMessage(StrParted + ANickname + ' - ' + ' -' + AHost + ': ' + APartMessage + ' - ' + AChannel);
+	FPartedCommand.Execute(ANickname, AHost, AChannel, APartMessage);
 end;
 
 procedure TIRC.OnQuit(ASender: TIdContext; const ANickname, AHost, AReason: String);
@@ -362,11 +352,6 @@ end;
 procedure TIRC.SendNickNameListReceived;
 begin
   FOnNickListReceived(FChannel, FNicknameList)
-end;
-
-procedure TIRC.SendParted;
-begin
-  FOnUserLeft(FChannel, FNickname);
 end;
 
 procedure TIRC.SendServerMessage;
@@ -503,6 +488,7 @@ begin
   inherited Create;
   FChannelList := ChannelList;
   FQuitCommand := TQuitCommand.Create(FChannelList);
+  FPartedCommand := TPartedCommand.Create(FChannelList);
 
   FView := ChannelList.View;
   FIdIRC := TIdIRC.Create(nil);
@@ -519,4 +505,4 @@ begin
 end;
 
 end.
-
+
