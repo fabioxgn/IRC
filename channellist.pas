@@ -142,19 +142,10 @@ end;
 
 procedure TChannelList.RemoveUserFromAllChannels(const NickName: string);
 var
- User: TUser;
  Channel: TChannel;
 begin
  for Channel in Self do
- begin
-   User := Channel.Users.UserByNick(NickName);
-   if User <> nil then
-   begin
-     User.Node.Free;
-     Channel.Users.Extract(User).Free;
-     FView.NotifyChanged;
-   end;
- end;
+   RemoveUserFromChannel(Channel.Name, NickName);
 end;
 
 procedure TChannelList.RemoveUserFromChannel(const ChannelName, Nickname: string);
