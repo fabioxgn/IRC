@@ -263,9 +263,14 @@ var
   Tab: TTabSheet;
   Memo: TMemo;
 
+	function NickNameInMessage: Boolean;
+	begin
+		Result := (Pos(FIRC.NickName, Message) > 0);
+	end;
+
  function AnimateTrayIcon: Boolean;
  begin
-   Result := (not OwnMessage) and (not Application.Active) and ((Channel[1] <> '#') or (Pos(FIRC.NickName, Message) > 0))
+   Result := (not OwnMessage) and (not Application.Active) and ((Channel[1] <> '#') or NickNameInMessage)
  end;
 
 begin
@@ -389,8 +394,8 @@ end;
 
 procedure TMainForm.AddUserToTreeView(const User: TUser; const Channel: TChannel);
 begin
- User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.NickNameInChannel);
- TreeViewUsers.AlphaSort;
+	User.Node := TreeViewUsers.Items.AddChild(TTreeNode(Channel.Node), User.NickNameInChannel);
+	TreeViewUsers.AlphaSort;
 end;
 
 procedure TMainForm.PageControlChange(Sender: TObject);
@@ -429,9 +434,7 @@ end;
 procedure TMainForm.TimerConnectionTimer(Sender: TObject);
 begin
   if FIRC.IsConnected then
-  begin
 		StatusBar.Panels[0].Text := Format('Connected. %s@%s', [FIRC.NickName, FIRC.HostName])
-  end
   else
 	  StatusBar.Panels[0].Text := 'Disconnected :(';
 end;
