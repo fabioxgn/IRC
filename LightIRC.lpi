@@ -45,7 +45,6 @@
           </Parsing>
           <CodeGeneration>
             <SmartLinkUnit Value="True"/>
-            <SmallerCode Value="True"/>
             <Optimizations>
               <OptimizationLevel Value="3"/>
             </Optimizations>
