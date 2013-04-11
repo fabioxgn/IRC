@@ -23,7 +23,6 @@ type
       FReady: Boolean;
       FChannel: string;
       FMessage: string;
-      FNickName: string;
       FServerMessage: string;
       FServerMessages: TStrings;
       FNickNameList: TStrings;
