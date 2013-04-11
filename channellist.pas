@@ -15,12 +15,13 @@ type
   private
     FNickNameInChannel: string;
     FNickName: string;
+    procedure SetNickName(AValue: string);
     procedure SetNickNameInChannel(AValue: string);
   public
     Tab: TObject;
     Node: TObject;
     property NickNameInChannel: string read FNickNameInChannel write SetNickNameInChannel;
-    property NickName: string read FNickName;
+    property NickName: string read FNickName write SetNickName;
     constructor Create(const ANickName: string);
   end;
 
@@ -65,7 +66,7 @@ type
 
 implementation
 
-uses strutils;
+uses strutils, IRCUtils;
 
 { TUserList }
 
@@ -85,17 +86,33 @@ end;
 
 procedure TUser.SetNickNameInChannel(AValue: string);
 begin
- if FNickNameInChannel = AValue then
-   Exit;
+	if FNickNameInChannel = AValue then
+		Exit;
 
- FNickNameInChannel := AValue;
+	FNickNameInChannel := AValue;
 
- FNickName :=  StringReplace(AValue, '@', '', []);
- FNickName :=  StringReplace(FNickName, '+', '', []);
+	FNickName := StringReplace(AValue, '@', '', []);
+	FNickName := StringReplace(FNickName, '+', '', []);
+end;
+
+procedure TUser.SetNickName(AValue: string);
+begin
+	if FNickName = AValue then
+  	Exit;
+
+  FNickName := AValue;
+
+  if TIRCUtils.IsOp(FNickNameInChannel) then
+		FNickNameInChannel := '@' + AValue
+  else if TIRCUtils.IsVoice(FNickNameInChannel) then
+		FNickNameInChannel := '+' + AValue
+  else
+    FNickNameInChannel := AValue;
 end;
 
 constructor TUser.Create(const ANickName: string);
 begin
+  inherited Create;
   NickNameInChannel := ANickName;
 end;
 
@@ -163,7 +180,7 @@ begin
   User := Channel.Users.UserByNick(Nickname);
   if (User <> nil) then
   begin
-     RemoveChannel := User.NickNameInChannel = FNickName;
+     RemoveChannel := User.NickName = FNickName;
      User.Node.Free;
      Channel.Users.Extract(User).Free;
      if RemoveChannel then
@@ -183,16 +200,16 @@ var
 begin
 	for Channel in Self do
 		for User in Channel.Users do
-			if User.NickNameInChannel = OldNickName then
+			if User.NickName = OldNickName then
 			begin
-				User.NickNameInChannel := NewNickName;
+				User.NickName := NewNickName;
 
 				if (User.Tab <> nil) then
 					FView.UpdateTabCaption(User.Tab, NewNickName);
 
         if (User.Node <> nil) then
         begin
-					FView.UpdateNodeText(User.Node, NewNickName);
+					FView.UpdateNodeText(User.Node, User.NickNameInChannel);
           FView.NotifyChanged;
         end;
       end;
@@ -228,7 +245,7 @@ begin
   begin
 	  User := TUser.Create(ANickname);
   	Channel.Users.Add(User);
-	  User.Node := FView.GetNode(User.NickNameInChannel, Channel.Node);
+	  User.Node := FView.GetNode(User.NickName, Channel.Node);
   end;
 
  	FView.ServerMessage(StrJoined + ANickname + ' - ' + AHost + ' - ' + AChannel);

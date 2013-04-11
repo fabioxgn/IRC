@@ -25,6 +25,7 @@ type
     procedure ChannelByName;
     procedure UserByNick;
     procedure NickNameChanged;
+    procedure UserNickNameChanged;
     procedure UserQuit;
     procedure RemoveUserFromChannel;
     procedure CloseChannelWhenCurrentUserParts;
@@ -124,6 +125,22 @@ begin
  CheckEquals('User4', FChannel2.Users.Items[1].NickName);
 end;
 
+procedure TChannelListTests.UserNickNameChanged;
+begin
+	FSUT.NickName := 'nick';
+
+  FChannel1.Users.Add(TUser.Create('@nick'));
+  FChannel2.Users.Add(TUser.Create('nick'));
+
+  FSUT.NickNameChanged('nick', 'newnick');
+
+  CheckEquals('@newnick', FChannel1.Users[0].NickNameInChannel);
+  CheckEquals('newnick', FChannel1.Users[0].NickName);
+
+  CheckEquals('newnick', FChannel2.Users[0].NickNameInChannel);
+  CheckEquals('newnick', FChannel2.Users[0].NickName);
+end;
+
 procedure TChannelListTests.UserQuit;
 begin
 	FChannel1.Users.Add(TUser.Create('User1'));
@@ -159,12 +176,16 @@ procedure TChannelListTests.CloseChannelWhenCurrentUserParts;
 begin
   FSUT.NickName := 'Nick';
 	FChannel1.Users.Add(TUser.Create(FSUT.NickName));
-	FChannel2.Users.Add(TUser.Create(FSUT.NickName));
+	FChannel2.Users.Add(TUser.Create('@Nick'));
 
 	FSUT.Parted(FSUT.NickName, '', StrChannel1, '');
 
   CheckEquals(1, FSUT.Count);
   CheckEquals(1, FChannel2.Users.Count);
+
+	FSUT.Parted('Nick', '', StrChannel2, '');
+
+  CheckEquals(0, FSUT.Count);
 end;
 
 procedure TChannelListTests.JoinChannel;
