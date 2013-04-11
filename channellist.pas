@@ -169,6 +169,7 @@ begin
      if RemoveChannel then
      begin
 				Channel.Node.Free;
+        Channel.Tab.Free;
 				Extract(Channel).Free;
      end;
      FView.NotifyChanged;
