@@ -46,8 +46,8 @@ end;
 
 class procedure TIdIRCConfig.ConfigureEncoding(IdIRC: TIdIRC);
 begin
-  IdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.Default;
-  IdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.Default;
+  IdIRC.IOHandler.DefStringEncoding := TIdTextEncoding.UTF8;
+  IdIRC.IOHandler.DefAnsiEncoding := TIdTextEncoding.UTF8;
 end;
 
 end.
