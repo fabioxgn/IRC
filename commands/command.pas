@@ -15,7 +15,7 @@ type
 
 	 TCommand = class
 	private
-			FChannels: TChannelList;
+		FChannels: TChannelList;
 	protected
 		procedure Syncronize(AMethod: TCommandProc);
 		property Channels: TChannelList read FChannels;
