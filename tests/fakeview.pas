@@ -5,7 +5,7 @@ unit fakeview;
 interface
 
 uses
-	IRCViewIntf;
+	 IRCViewIntf;
 
 type
 
@@ -13,11 +13,11 @@ type
 
 	TFakeView = class(TInterfacedObject, IIRCView)
 		procedure ServerMessage(const AText: string);
-	  procedure UpdateNodeText(Node: TObject; AText: string);
-	  procedure UpdateTabCaption(Tab: TObject; ACaption: string);
-	  procedure NotifyChanged;
-    function GetTab(const ACaption: string): TObject;
-    function GetNode(const ACaption: string; ParentNode: TObject): TObject;
+		procedure UpdateNodeText(Node: TObject; AText: string);
+		procedure UpdateTabCaption(Tab: TObject; ACaption: string);
+		procedure NotifyChanged;
+		function GetTab(const ACaption: string): TObject;
+		function GetNode(const ACaption: string; ParentNode: TObject): TObject;
 	end;
 
 implementation
@@ -54,5 +54,4 @@ begin
 
 end;
 
-end.
-
+end.
