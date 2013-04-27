@@ -8,17 +8,17 @@ uses command;
 
 type
 
-{ TJoinedCommand }
+	{ TJoinedCommand }
 
- TJoinedCommand = class(TCommand)
- private
+	TJoinedCommand = class(TCommand)
+	private
 		FNickName: string;
-    FHost: string;
-    FChannel: string;
-    procedure Send;
+		FHost: string;
+		FChannel: string;
+		procedure Send;
 	public
-  	procedure Execute(const ANickname, AHost, AChannel: string);
-  end;
+		 procedure Execute(const ANickname, AHost, AChannel: string);
+	end;
 
 implementation
 
@@ -32,10 +32,9 @@ end;
 procedure TJoinedCommand.Execute(const ANickname, AHost, AChannel: string);
 begin
 	FNickName := ANickname;
-  FHost := AHost;
-  FChannel := AChannel;
-  Syncronize(@Send);
+	FHost := AHost;
+	FChannel := AChannel;
+	Syncronize(@Send);
 end;
 
-end.
-
+end.

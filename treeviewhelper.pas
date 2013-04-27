@@ -5,15 +5,15 @@ unit TreeviewHelper;
 interface
 
 uses
-  Classes, SysUtils, ComCtrls, strutils;
+	Classes, SysUtils, ComCtrls, strutils;
 
 type
 
-  { TTreeViewHelper }
+	{ TTreeViewHelper }
 
-  TTreeViewHelper = class helper for TTreeview
-    procedure FilterNodes(const Text: string);
-  end;
+	TTreeViewHelper = class helper for TTreeview
+		procedure FilterNodes(const Text: string);
+	end;
 
 implementation
 
@@ -21,26 +21,25 @@ implementation
 
 procedure TTreeViewHelper.FilterNodes(const Text: string);
 var
-  Node: TTreeNode;
-  I: Integer;
-  S: string;
-  FirstSelected: Boolean;
+	Node: TTreeNode;
+	I: integer;
+	S: string;
+	FirstSelected: boolean;
 begin
-  S := Trim(Text);
-  FirstSelected := False;
-  for Node in Items do
+	S := Trim(Text);
+	FirstSelected := False;
+	for Node in Items do
 	 begin
-    for I := 0 to Node.Count -1 do
-    begin
-      Node.Items[I].Visible := (S = '') or AnsiStartsText(S, Node.Items[I].Text);
-      if not FirstSelected then
-      begin
-        Node.Items[I].Selected := True;
-        FirstSelected := True;
-      end;
-    end;
-  end;
+		for I := 0 to Node.Count - 1 do
+		begin
+			Node.Items[I].Visible := (S = '') or AnsiStartsText(S, Node.Items[I].Text);
+			if not FirstSelected then
+			begin
+				Node.Items[I].Selected := True;
+				FirstSelected := True;
+			end;
+		end;
+	end;
 end;
 
 end.
-

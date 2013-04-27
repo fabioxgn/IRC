@@ -9,16 +9,16 @@ uses
 
 type
 
-{ TQuitCommand }
+	{ TQuitCommand }
 
 	TQuitCommand = class(TCommand)
 	private
-	  FNickName: string;
-	  FReason: string;
-		procedure Send;
+		 FNickName: string;
+		 FReason: string;
+			procedure Send;
 	public
-		procedure Execute(const ANickName, AReason: string);
-  end;
+			procedure Execute(const ANickName, AReason: string);
+	end;
 
 
 implementation
@@ -32,10 +32,9 @@ end;
 
 procedure TQuitCommand.Execute(const ANickName, AReason: string);
 begin
-	FNickName :=  ANickName;
-  FReason := AReason;
-  Syncronize(@Send);
+	FNickName := ANickName;
+	FReason := AReason;
+	Syncronize(@Send);
 end;
 
 end.
-

@@ -5,23 +5,23 @@ unit command;
 interface
 
 uses
-  ChannelList, IdSync;
+	ChannelList, IdSync;
 
 type
 
-{ TCommand }
+	{ TCommand }
 
-  TCommandProc = procedure of object;
+	TCommandProc = procedure of object;
 
-	TCommand = class
-  private
-		FChannels: TChannelList;
-   protected
-     procedure Syncronize(AMethod: TCommandProc);
-     property Channels: TChannelList read FChannels;
-  public
-	  constructor Create(AServer: TChannelList);
-  end;
+	 TCommand = class
+	private
+			FChannels: TChannelList;
+	protected
+		procedure Syncronize(AMethod: TCommandProc);
+		property Channels: TChannelList read FChannels;
+	public
+		 constructor Create(AServer: TChannelList);
+	end;
 
 implementation
 
@@ -29,13 +29,12 @@ implementation
 
 procedure TCommand.Syncronize(AMethod: TCommandProc);
 begin
-	TIdSync.SynchronizeMethod(AMethod);
+	 TIdSync.SynchronizeMethod(AMethod);
 end;
 
 constructor TCommand.Create(AServer: TChannelList);
 begin
-	FChannels := AServer;
+	 FChannels := AServer;
 end;
 
 end.
-

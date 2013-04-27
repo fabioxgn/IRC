@@ -5,22 +5,22 @@ unit partedcommand;
 interface
 
 uses
-  Classes, SysUtils, command;
+	Classes, SysUtils, command;
 
 type
 
-  { TPartedCommand }
+	{ TPartedCommand }
 
-  TPartedCommand = class(TCommand)
-   private
-    FNickname: string;
-    FHost: string;
-    FChannel: string;
-    FPartMessage: string;
-    procedure Send;
-   public
-		procedure Execute(const ANickname, AHost, AChannel, APartMessage: String);
-  end;
+	TPartedCommand = class(TCommand)
+	private
+		FNickname: string;
+		FHost: string;
+		FChannel: string;
+		FPartMessage: string;
+		procedure Send;
+	public
+		procedure Execute(const ANickname, AHost, AChannel, APartMessage: string);
+	end;
 
 
 
@@ -33,14 +33,13 @@ begin
 	Channels.Parted(FNickname, FHost, FChannel, FPartMessage);
 end;
 
-procedure TPartedCommand.Execute(const ANickname, AHost, AChannel, APartMessage: String);
+procedure TPartedCommand.Execute(const ANickname, AHost, AChannel, APartMessage: string);
 begin
 	FNickname := ANickname;
-  FHost := AHost;
-  FChannel := AChannel;
-  FPartMessage := APartMessage;
+	FHost := AHost;
+	FChannel := AChannel;
+	FPartMessage := APartMessage;
 	Syncronize(@Send);
 end;
 
 end.
-
