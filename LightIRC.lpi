@@ -176,8 +176,9 @@
     </CodeGeneration>
     <Linking>
       <Debugging>
+        <DebugInfoType Value="dsDwarf2Set"/>
         <UseHeaptrc Value="True"/>
-        <UseExternalDbgSyms Value="True"/>
+        <UseValgrind Value="True"/>
       </Debugging>
       <Options>
         <Win32>
@@ -190,6 +191,7 @@
         <IgnoredMessages idx5024="True"/>
         <UseMsgFile Value="True"/>
       </CompilerMessages>
+      <CustomOptions Value="-dDEBUG"/>
       <CompilerPath Value="$(CompPath)"/>
     </Other>
   </CompilerOptions>
@@ -218,4 +220,4 @@
       </Item7>
     </Exceptions>
   </Debugging>
-</CONFIG>
+</CONFIG>

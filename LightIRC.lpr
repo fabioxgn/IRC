@@ -7,6 +7,7 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
 	cthreads,
 	cmem, {$ENDIF} {$ENDIF}
 	Interfaces, // this includes the LCL widgetset
+	Sysutils,
 	Forms,
 	Main,
 	IRC,
@@ -23,6 +24,11 @@ uses {$IFDEF UNIX} {$IFDEF UseCThreads}
 {$R *.res}
 
 begin
+	{$IFDEF DEBUG}
+	DeleteFile('heap.trc');
+	SetHeapTraceOutput('heap.trc');
+	{$ENDIF DEBUG}
+
 	Application.Initialize;
 	Application.CreateForm(TMainForm, MainForm);
 	Application.Run;
