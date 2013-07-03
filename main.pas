@@ -341,9 +341,9 @@ end;
 function TMainForm.GetNode(const ACaption: string; ParentNode: TObject): TObject;
 begin
 	if ParentNode = nil then
-		 Result := TreeViewUsers.Items.Add(nil, ACaption)
+		Result := TreeViewUsers.Items.Add(nil, ACaption)
 	else
-			Result := TreeViewUsers.Items.AddChild(ParentNode as TTreeNode, ACaption);
+		Result := TreeViewUsers.Items.AddChild(ParentNode as TTreeNode, ACaption);
 	TreeViewUsers.AlphaSort;
 end;
 
@@ -431,10 +431,15 @@ end;
 
 procedure TMainForm.TimerConnectionTimer(Sender: TObject);
 begin
+  //TODO: Timer and this logic must be on the IRC class
 	if FIRC.IsConnected then
-			StatusBar.Panels[0].Text := Format('Connected. %s@%s', [FIRC.NickName, FIRC.HostName])
+		StatusBar.Panels[0].Text := Format('Connected. %s@%s', [FIRC.NickName, FIRC.HostName])
 	else
-		 StatusBar.Panels[0].Text := 'Disconnected :(';
+  begin
+		StatusBar.Panels[0].Text := 'Disconnected. Reconnecting... \o/';
+    FIRC.Disconnect;
+    FIRC.Connect;
+  end;
 end;
 
 procedure TMainForm.TimerPingTimer(Sender: TObject);

@@ -72,7 +72,6 @@ type
 		procedure SendServerMessage(const Msg: string); overload;
 		procedure SendNickNameChanged;
 		procedure DoConnect;
-		procedure MessageBox(const Msg: string);
 		procedure HandleIdException(E: EIdException);
 	 public
 		property Ready: boolean read FReady;
@@ -103,6 +102,9 @@ const
 	 NickNameFormat = '<%s>';
 	 MessageFormat = '%s ' + NickNameFormat + ': %s';
 
+resourcestring
+  StrTopic = 'Topic for %s: %s' + sLineBreak;
+
 procedure TIRC.DoDisconnect;
 begin
 	try
@@ -111,7 +113,7 @@ begin
 	except
 		//We just ignore everything at this point and hope for the best
 	end;
-	FChannelList.RemoveUserFromAllChannels(FChannelList.NickName);
+	FChannelList.ClearChannels;
 end;
 
 procedure TIRC.ConfigureEvents;
@@ -135,7 +137,7 @@ end;
 
 function TIRC.FormatMessage(const NickName, Message: string): string;
 begin
-	Result := Format(MessageFormat, [FormatDateTime(ShortTimeFormat, Now), NickName, Message]);
+	Result := Format(MessageFormat, [FormatDateTime(DefaultFormatSettings.ShortTimeFormat, Now), NickName, Message]);
 end;
 
 function TIRC.GetHostName: string;
@@ -171,11 +173,19 @@ end;
 procedure TIRC.AutoJoinChannels;
 var
 	I: integer;
+	Channel: TChannel;
 begin
+	if FChannelList.Count > 0 then
+	begin
+		for Channel in FChannelList do
+			Join(Channel.Name);
+		Exit;
+	end;
+
 	if FAutoJoinChannels = nil then
 		Exit;
 
-	 for I := 0 to FAutoJoinChannels.Count - 1 do
+	for I := 0 to FAutoJoinChannels.Count - 1 do
 		Join(FAutoJoinChannels.ValueFromIndex[I]);
 end;
 
@@ -276,10 +286,11 @@ begin
 	TIdSync.SynchronizeMethod(@SendServerMessage);
 end;
 
+
 procedure TIRC.OnTopic(ASender: TIdContext; const ANickname, AHost, AChannel, ATopic: string);
 begin
 	FChannel := AChannel;
-	FMessage := ATopic + sLineBreak;
+	FMessage := Format(StrTopic, [AChannel, ATopic]);
 	TIdSync.SynchronizeMethod(@SendMessage);
 end;
 
@@ -373,35 +384,26 @@ begin
 			 if FIdIRC.IOHandler <> nil then
 				FIdIRC.IOHandler.InputBuffer.Clear;
 
-			 MessageBox(Format('Cannot connect to server: %s', [E.Message]));
+       FView.ServerMessage(Format('Cannot connect to server: %s', [E.Message]));
 			 Abort;
 		end;
 	end;
 end;
 
-procedure TIRC.MessageBox(const Msg: string);
-begin
-	SendServerMessage('Disconnected from server.');
-	if Assigned(FOnShowPopup) then
-		FOnShowPopup(Msg);
-end;
-
 procedure TIRC.HandleIdException(E: EIdException);
 begin
-	MessageBox(E.Message);
+	SendServerMessage(E.Message);
 end;
 
 procedure TIRC.Connect;
 begin
-	if IsConnected then
-		Disconnect;
-
+	Disconnect;
 	ConfigureEvents;
 	TIdIRCConfig.Configure(FIdIRC, FAutoJoinChannels);
 	DoConnect;
 	FChannelList.NickName := FIdIRC.UsedNickname;
-	AutoJoinChannels;
 	TIdIRCConfig.ConfigureEncoding(FIdIRC);
+	AutoJoinChannels;
 end;
 
 procedure TIRC.Disconnect;
@@ -444,7 +446,12 @@ end;
 
 procedure TIRC.Ping;
 begin
-	FIdIRC.Ping(FIdIRC.Host);
+  try
+  	FIdIRC.Ping(FIdIRC.Host);
+  except
+		on E: EIdException do
+			HandleIdException(E);
+	end;
 end;
 
 procedure TIRC.SendMessage(const Message: string);
@@ -490,4 +497,4 @@ begin
 	inherited;
 end;
 
-end.
+end.

@@ -39,6 +39,7 @@ type
     Tab: TObject;
     Node: TObject;
     Users: TUserList;
+    procedure RemoveUser(User: TUser);
     constructor Create(const ChannelName: string);
     destructor Destroy; override;
   end;
@@ -54,6 +55,7 @@ type
     function AutoComplete(const ChannelName: string; const SearchString: string): string;
     function ChannelByName(const Name: string): TChannel;
     procedure RemoveUserFromAllChannels(const NickName: string);
+    procedure ClearChannels;
     procedure RemoveUserFromChannel(const ChannelName, Nickname: string);
     procedure NickNameChanged(const OldNickName, NewNickName: string);
     procedure Quit(const ANickName, AReason: string);
@@ -118,6 +120,12 @@ end;
 
 { TUserList }
 
+procedure TChannel.RemoveUser(User: TUser);
+begin
+  User.Node.Free;
+  Users.Extract(User).Free;
+end;
+
 constructor TChannel.Create(const ChannelName: string);
 begin
   Name := ChannelName;
@@ -167,6 +175,17 @@ begin
    RemoveUserFromChannel(Channel.Name, NickName);
 end;
 
+procedure TChannelList.ClearChannels;
+var
+	Channel: TChannel;
+	I: Integer;
+begin
+	for Channel in Self do
+		for I := Channel.Users.Count -1 downto 0 do
+			Channel.RemoveUser(Channel.Users[I]);
+	FView.NotifyChanged;
+end;
+
 procedure TChannelList.RemoveUserFromChannel(const ChannelName, Nickname: string);
 var
   User: TUser;
@@ -181,8 +200,7 @@ begin
   if (User <> nil) then
   begin
      RemoveChannel := User.NickName = FNickName;
-     User.Node.Free;
-     Channel.Users.Extract(User).Free;
+     Channel.RemoveUser(User);
      if RemoveChannel then
      begin
 				Channel.Node.Free;
