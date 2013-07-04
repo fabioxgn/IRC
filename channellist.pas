@@ -80,10 +80,10 @@ resourcestring
 
 function TUserList.UserByNick(const NickName: string): TUser;
 begin
-  for Result in Self do
-    if Result.NickName = NickName then
-      Exit;
-  Result := nil;
+	for Result in Self do
+		if Result.NickName = NickName then
+			Exit;
+	Result := nil;
 end;
 
 procedure TUser.SetNickNameInChannel(AValue: string);
